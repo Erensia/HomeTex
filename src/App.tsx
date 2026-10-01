@@ -29,16 +29,12 @@ function Shell({ data }: { data: AppData }) {
 
   return (
     <>
-      <div className="topbar">
-        <button className="burger" aria-label="메뉴" onClick={() => setOpen(true)}>☰</button>
+      <button className="logo-btn" aria-label="메뉴 열기/닫기" aria-expanded={open} onClick={() => setOpen(o => !o)}>
         <Logo />
-      </div>
+        {needBackup && !open && <em className="dot" />}
+      </button>
       {open && <div className="scrim" onClick={() => setOpen(false)} />}
       <aside className={open ? 'open' : ''}>
-        <div className="side-head">
-          <button className="burger" aria-label="메뉴 열기/닫기" onClick={() => setOpen(o => !o)}>☰</button>
-          <Logo />
-        </div>
         <nav>
           {links.map(([to, icon, label, end]) => (
             <NavLink key={to} to={to} end={end} title={label}>

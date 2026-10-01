@@ -1,7 +1,7 @@
 :root {
   --fg: #12264d; --muted: #5a6b8c; --accent: #2f6fed; --accent2: #5aa9ff; --bad: #d93025;
   --glass: rgba(255, 255, 255, .6); --glass-line: rgba(255, 255, 255, .8); --line: rgba(47, 111, 237, .15);
-  --side: 72px; --side-open: 224px;
+  --side: 220px;
 }
 * { box-sizing: border-box; }
 body {
@@ -22,60 +22,39 @@ body {
   box-shadow: 0 8px 32px rgba(47, 111, 237, .12);
 }
 
-/* ---- 로고: Home 흰색 / Tex 파란색 ---- */
-.logo { font-weight: 800; font-size: 1.25rem; letter-spacing: -.02em; color: #fff; white-space: nowrap; }
+/* ---- 로고 버튼 (사이드바 토글): Home 흰색 / Tex 파란색 ---- */
+.logo { font-weight: 800; font-size: 1.2rem; letter-spacing: -.02em; color: #fff; white-space: nowrap; }
 .logo b { color: var(--accent2); }
-
-/* ---- 사이드바 ---- */
-aside {
-  position: fixed; inset: 0 auto 0 0; z-index: 20; width: var(--side); overflow: hidden;
-  display: flex; flex-direction: column; gap: 8px;
-  padding: calc(12px + env(safe-area-inset-top)) 10px 12px;
-  background: linear-gradient(180deg, rgba(20, 60, 150, .62), rgba(30, 90, 210, .5));
-  backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-right: 1px solid rgba(255, 255, 255, .35); box-shadow: 8px 0 32px rgba(20, 60, 150, .18);
-  transition: width .25s ease, transform .25s ease;
+.logo-btn {
+  position: fixed; z-index: 30; top: calc(10px + env(safe-area-inset-top)); left: 12px; margin: 0; padding: 6px 16px;
+  background: rgba(18, 38, 77, .78); border: 1px solid rgba(255, 255, 255, .4); border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(18, 38, 77, .25);
 }
-aside:hover, aside:focus-within, aside.open { width: var(--side-open); }
-.side-head { display: flex; align-items: center; gap: 10px; height: 44px; }
-.logo { opacity: 0; transition: opacity .2s; }
-aside:hover .logo, aside:focus-within .logo, aside.open .logo, .topbar .logo { opacity: 1; }
-aside nav { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.logo-btn:hover { background: rgba(18, 38, 77, .9); }
+.dot { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--bad); border: 2px solid #fff; }
+
+/* ---- 사이드바: 로고를 누르면 슬라이드 ---- */
+aside {
+  position: fixed; inset: 0 auto 0 0; z-index: 20; width: var(--side);
+  padding: calc(66px + env(safe-area-inset-top)) 12px 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .72), rgba(214, 231, 255, .6));
+  backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid var(--glass-line); box-shadow: 8px 0 32px rgba(47, 111, 237, .15);
+  transform: translateX(-105%); visibility: hidden; transition: transform .25s ease, visibility .25s;
+}
+aside.open { transform: none; visibility: visible; }
+aside nav { display: flex; flex-direction: column; gap: 4px; }
 aside nav a {
   display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 12px;
-  color: rgba(255, 255, 255, .85); text-decoration: none; white-space: nowrap; position: relative;
+  color: var(--fg); text-decoration: none; white-space: nowrap;
 }
 aside nav a i { font-style: normal; width: 20px; text-align: center; flex: none; }
-aside nav a:hover { background: rgba(255, 255, 255, .16); }
-aside nav a.active { background: rgba(255, 255, 255, .28); color: #fff; font-weight: 600; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4); }
+aside nav a:hover { background: rgba(47, 111, 237, .1); }
+aside nav a.active { background: linear-gradient(135deg, #2f6fed, #5aa9ff); color: #fff; font-weight: 600; box-shadow: 0 4px 14px rgba(47, 111, 237, .3); }
 .badge { background: var(--bad); color: #fff; font-size: .7rem; font-style: normal; border-radius: 8px; padding: 1px 6px; margin-left: auto; }
-/* 접힌 상태: 글자 숨김, 배지는 점 */
-aside nav a span { opacity: 0; transition: opacity .15s; }
-aside:hover nav a span, aside:focus-within nav a span, aside.open nav a span { opacity: 1; }
-aside .badge { position: absolute; top: 8px; right: 8px; width: 10px; height: 10px; padding: 0; font-size: 0; border-radius: 50%; }
-aside:hover .badge, aside:focus-within .badge, aside.open .badge { position: static; width: auto; height: auto; padding: 1px 6px; font-size: .7rem; border-radius: 8px; }
-.burger { background: rgba(255, 255, 255, .18); border: 1px solid rgba(255, 255, 255, .4); color: #fff; width: 44px; height: 44px; flex: none; padding: 0; font-size: 1.2rem; }
+.scrim { position: fixed; inset: 0; z-index: 15; background: rgba(10, 30, 80, .2); }
 
-.topbar { display: none; }
-.scrim { position: fixed; inset: 0; z-index: 15; background: rgba(10, 30, 80, .35); }
-
-main { max-width: 760px; margin: 0 auto; padding: 12px 16px calc(40px + env(safe-area-inset-bottom)); }
-body:has(aside) main { margin-left: calc(var(--side) + 16px); margin-right: auto; }
-
-@media (max-width: 720px) {
-  aside { transform: translateX(-100%); width: var(--side-open); }
-  aside.open { transform: none; }
-  aside:hover { width: var(--side-open); }
-  aside .logo, aside nav a span { opacity: 1; }
-  aside .badge { position: static; width: auto; height: auto; padding: 1px 6px; font-size: .7rem; border-radius: 8px; }
-  .topbar {
-    display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10;
-    padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
-    background: linear-gradient(90deg, rgba(20, 60, 150, .7), rgba(47, 111, 237, .6));
-    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, .35);
-  }
-  body:has(aside) main { margin-left: auto; }
-}
+main { max-width: 760px; margin: 0 auto; padding: calc(64px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom)); }
 
 /* ---- 본문 ---- */
 h1 { font-size: 1.3rem; margin: 12px 0; }
