@@ -29,8 +29,10 @@ body {
   position: fixed; z-index: 30; top: calc(10px + env(safe-area-inset-top)); left: 12px; margin: 0; padding: 6px 16px;
   background: rgba(18, 38, 77, .78); border: 1px solid rgba(255, 255, 255, .4); border-radius: 14px;
   box-shadow: 0 6px 20px rgba(18, 38, 77, .25);
+  /* iOS Safari: backdrop-filter가 겹치면 글자 일부가 블러에 가려짐 → 로고는 불투명 + 별도 레이어 */
+  background: #12264d; backdrop-filter: none; -webkit-backdrop-filter: none; transform: translateZ(0);
 }
-.logo-btn:hover { background: rgba(18, 38, 77, .9); }
+.logo-btn:hover { background: #1b3a74; }
 /* 스크롤되는 본문(카드·글자)이 고정 로고 뒤로 비쳐 겹쳐 보이지 않도록 상단 띠로 가림 */
 body::before {
   content: ''; position: fixed; inset: 0 0 auto 0; z-index: 25; pointer-events: none;
@@ -44,11 +46,11 @@ aside {
   position: fixed; inset: 0 auto 0 0; z-index: 20; width: var(--side);
   padding: calc(66px + env(safe-area-inset-top)) 12px 12px;
   background: linear-gradient(180deg, rgba(255, 255, 255, .72), rgba(214, 231, 255, .6));
-  backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-right: 1px solid var(--glass-line); box-shadow: 8px 0 32px rgba(47, 111, 237, .15);
   transform: translateX(-105%); visibility: hidden; transition: transform .25s ease, visibility .25s;
 }
-aside.open { transform: none; visibility: visible; }
+/* 닫힌 상태에선 블러 레이어를 만들지 않음 (iOS에서 로고 위로 번지는 것 방지) */
+aside.open { transform: none; visibility: visible; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); }
 aside nav { display: flex; flex-direction: column; gap: 4px; }
 aside nav a {
   display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 12px;
