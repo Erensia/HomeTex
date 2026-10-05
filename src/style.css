@@ -26,7 +26,7 @@ body {
 .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: -.02em; color: #fff; white-space: nowrap; }
 .logo b { color: var(--accent2); }
 .logo-btn {
-  position: absolute; z-index: 30; top: calc(10px + env(safe-area-inset-top)); left: 12px; margin: 0; padding: 6px 16px;
+  position: fixed; z-index: 30; top: calc(10px + env(safe-area-inset-top)); left: 12px; margin: 0; padding: 6px 16px;
   background: rgba(18, 38, 77, .78); border: 1px solid rgba(255, 255, 255, .4); border-radius: 14px;
   box-shadow: 0 6px 20px rgba(18, 38, 77, .25);
   /* iOS Safari: backdrop-filter가 겹치면 글자 일부가 블러에 가려짐 → 로고는 불투명 + 별도 레이어 */
