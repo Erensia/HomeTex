@@ -31,6 +31,12 @@ body {
   box-shadow: 0 6px 20px rgba(18, 38, 77, .25);
 }
 .logo-btn:hover { background: rgba(18, 38, 77, .9); }
+/* 스크롤되는 본문(카드·글자)이 고정 로고 뒤로 비쳐 겹쳐 보이지 않도록 상단 띠로 가림 */
+body::before {
+  content: ''; position: fixed; inset: 0 0 auto 0; z-index: 25; pointer-events: none;
+  height: calc(58px + env(safe-area-inset-top));
+  background: linear-gradient(180deg, rgba(244, 248, 255, .96) 70%, rgba(244, 248, 255, 0));
+}
 .dot { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--bad); border: 2px solid #fff; }
 
 /* ---- 사이드바: 로고를 누르면 슬라이드 ---- */
