@@ -55,7 +55,6 @@ function Shell({ data }: { data: AppData }) {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <button className="to-top" aria-label="맨 위로" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>▲</button>
     </>
   )
 }

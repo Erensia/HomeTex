@@ -35,14 +35,6 @@ body {
 .logo-btn:hover { background: #1b3a74; }
 /* iOS 26/27 PWA: 상단에 '불투명 fixed 박스(폭 80%+, 높이 6px+)'가 있으면 시스템 블러 대신 단색으로 처리됨 */
 .status-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: max(6px, env(safe-area-inset-top)); background: #f4f8ff; }
-/* 모바일 전용 맨 위로 버튼 (로고 메뉴가 페이지 상단에 있으므로) */
-.to-top {
-  position: fixed; z-index: 10; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); margin: 0; padding: 0;
-  width: 44px; height: 44px; border-radius: 50%; font-size: 1rem; color: var(--fg);
-  background: rgba(255, 255, 255, .55); border: 1px solid var(--glass-line); box-shadow: 0 4px 16px rgba(47, 111, 237, .25);
-  backdrop-filter: none; -webkit-backdrop-filter: none;
-}
-@media (min-width: 761px) { .to-top { display: none; } }
 .dot { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--bad); border: 2px solid #fff; }
 
 /* ---- 사이드바: 로고를 누르면 슬라이드 ---- */
