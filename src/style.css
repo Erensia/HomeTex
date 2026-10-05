@@ -37,7 +37,7 @@ body {
 body::before {
   content: ''; position: fixed; inset: 0 0 auto 0; z-index: 25; pointer-events: none;
   height: calc(58px + env(safe-area-inset-top));
-  background: linear-gradient(180deg, rgba(244, 248, 255, .96) 70%, rgba(244, 248, 255, 0));
+  background: linear-gradient(180deg, #f4f8ff 92%, rgba(244, 248, 255, 0));
 }
 .dot { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--bad); border: 2px solid #fff; }
 
