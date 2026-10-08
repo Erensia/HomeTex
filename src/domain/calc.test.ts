@@ -39,3 +39,10 @@ it('월 간 잔액 이어받기 + 저축 조정', () => {
   expect(r['2026-12'].savingsDelta).toBe(-180000)
   expect(r['2026-12'].rakutenBalance).toBe(24018 + 10000 - 3719)
 })
+
+it('데이트비: 카드 잔액에서 차감, 지출로 분류되어 3항목 합 = 테토리 유지', () => {
+  const c = calcMonth({ ...month, dating: 30000 }, settings, { savings: 0, rakuten: 17737 })
+  expect(c.cardBalance).toBe(89739 - 30000)
+  expect(c.ratios[1].actual).toBe(109739)
+  expect(c.ratios.reduce((s, r) => s + r.actual, 0)).toBe(225979)
+})

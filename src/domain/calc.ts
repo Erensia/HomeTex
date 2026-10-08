@@ -15,8 +15,8 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
   const recurringAll = sum(m.recurring.map(recurringTotal))
   const recurringAccount = sum(m.recurring.filter(r => r.paidBy === 'account').map(recurringTotal))
   const recurringRakuten = recurringAll - recurringAccount
-  const datingTotal = sum((m.dating ?? []).map(d => d.amount))
-  const cardBalance =savingsOutside - s.rakutenCharge - m.cash - recurringAccount - m.cards.mitsui
+  const datingTotal = typeof m.dating === 'number' ? m.dating : 0 // 구버전(배열) 데이터 방어
+  const cardBalance = savingsOutside - s.rakutenCharge - m.cash - datingTotal - recurringAccount - m.cards.mitsui
   const rakutenBalance = prev.rakuten + s.rakutenCharge - recurringRakuten
   const savingsBalance = prev.savings + m.savingsTransfer + sum(m.savingsAdjustments.map(a => a.amount))
   const savingsRecommended = fl(fl(m.takeHome * s.ratios.savings) / s.savingsRoundingUnit) * s.savingsRoundingUnit
@@ -24,7 +24,7 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
   const overtimePay = fl((m.grossBase / s.overtime.denominator) * s.overtime.multiplier * overtimeHours)
   const actual: Record<RatioKey, number> = {
     fixed: yuchoCard + m.cards.mitsui + recurringAccount + s.rakutenCharge,
-    spending: m.cash + cardBalance,
+    spending: m.cash + datingTotal + cardBalance,
     savings: m.savingsTransfer,
   }
   const ratios = (['fixed', 'spending', 'savings'] as RatioKey[]).map(key => ({

@@ -13,7 +13,7 @@ export interface MonthRecord {
   savingsTransfer: number
   savingsAdjustments: { amount: number; memo: string }[]
   recurring: Recurring[]
-  dating?: { amount: number; memo: string }[] // 기록용: 잔액 계산에는 쓰지 않음
+  dating?: number // 월 데이트비 예상총액 (카드 잔액에서 차감)
   memo: string
 }
 
@@ -69,6 +69,7 @@ export const carryOver = (prev: MonthRecord): MonthRecord => ({
   grossBase: prev.grossBase,
   grossTotal: prev.grossTotal,
   cash: prev.cash,
+  dating: prev.dating,
   savingsTransfer: prev.savingsTransfer,
   recurring: prev.recurring.map(r => ({ ...r, amounts: [...r.amounts] })),
 })

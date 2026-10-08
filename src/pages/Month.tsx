@@ -74,6 +74,7 @@ export default function Month() {
         <Step label="저축 외" value={c.savingsOutside} />
         <Step label="라쿠텐 충전" value={s.rakutenCharge} minus />
         <Step label="현금" value={m.cash} minus />
+        <Step label="데이트비 (예상)" value={c.datingTotal} minus />
         <Step label="월과금 (계좌분)" value={c.recurringAccount} minus />
         <Step label="미츠이" value={m.cards.mitsui} minus />
         <div className="row total"><span>카드 잔액</span><b className={c.cardBalance < 0 ? 'neg' : ''}>{yen(c.cardBalance)}</b></div>
@@ -124,6 +125,7 @@ export default function Month() {
         <Num label="세전 기본급" value={m.grossBase} onChange={n => edit(m => ({ ...m, grossBase: n }))} />
         <Num label="총지급액 (세전)" value={m.grossTotal ?? 0} onChange={n => edit(m => ({ ...m, grossTotal: n || undefined }))} />
         <Num label="현금" value={m.cash} onChange={n => edit(m => ({ ...m, cash: n }))} />
+        <Num label="데이트비 (월 예상총액)" value={c.datingTotal} onChange={n => edit(m => ({ ...m, dating: n }))} />
         <h3>월과금</h3>
         {m.recurring.map((r, i) => (
           <div className="inline" key={r.id}>
@@ -140,23 +142,6 @@ export default function Month() {
         ))}
         <button onClick={() => edit(m => ({ ...m, recurring: [...m.recurring, { id: crypto.randomUUID(), name: '', amounts: [], paidBy: 'account' }] }))}>+ 항목 추가</button>
       </details>
-
-      <section className="card">
-        <h2>데이트비</h2>
-        {(m.dating ?? []).map((d, i) => {
-          const setDating = (patch: Partial<typeof d>) => edit(m => ({ ...m, dating: (m.dating ?? []).map((x, j) => (j === i ? { ...x, ...patch } : x)) }))
-          return (
-            <div className="inline" key={i}>
-              <input type="number" inputMode="numeric" value={d.amount || ''} placeholder="금액"
-                onChange={e => setDating({ amount: Number(e.target.value) || 0 })} />
-              <input value={d.memo} placeholder="메모 (식비, 일용품 등)" onChange={e => setDating({ memo: e.target.value })} />
-              <button onClick={() => edit(m => ({ ...m, dating: (m.dating ?? []).filter((_, j) => j !== i) }))}>삭제</button>
-            </div>
-          )
-        })}
-        <button onClick={() => edit(m => ({ ...m, dating: [...(m.dating ?? []), { amount: 0, memo: '' }] }))}>+ 항목 추가</button>
-        <div className="row total"><span>이번 달 데이트비</span><b>{yen(c.datingTotal)}</b></div>
-      </section>
 
       <section className="card">
         <h2>라쿠텐</h2>
