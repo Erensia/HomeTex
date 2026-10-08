@@ -15,7 +15,8 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
   const recurringAll = sum(m.recurring.map(recurringTotal))
   const recurringAccount = sum(m.recurring.filter(r => r.paidBy === 'account').map(recurringTotal))
   const recurringRakuten = recurringAll - recurringAccount
-  const cardBalance = savingsOutside - s.rakutenCharge - m.cash - recurringAccount - m.cards.mitsui
+  const datingTotal = sum((m.dating ?? []).map(d => d.amount))
+  const cardBalance =savingsOutside - s.rakutenCharge - m.cash - recurringAccount - m.cards.mitsui
   const rakutenBalance = prev.rakuten + s.rakutenCharge - recurringRakuten
   const savingsBalance = prev.savings + m.savingsTransfer + sum(m.savingsAdjustments.map(a => a.amount))
   const savingsRecommended = fl(fl(m.takeHome * s.ratios.savings) / s.savingsRoundingUnit) * s.savingsRoundingUnit
@@ -33,7 +34,7 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
     pct: m.takeHome ? (actual[key] / m.takeHome) * 100 : 0,
   }))
   return {
-    yuchoCard, outside, savingsOutside, recurringAll, recurringAccount, recurringRakuten,
+    yuchoCard, outside, savingsOutside, recurringAll, recurringAccount, recurringRakuten, datingTotal,
     cardBalance, rakutenBalance, savingsBalance, savingsDelta: savingsBalance - prev.savings,
     savingsRecommended, overtimeHours, overtimePay, ratios,
   }

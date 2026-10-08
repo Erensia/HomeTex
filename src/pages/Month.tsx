@@ -122,7 +122,7 @@ export default function Month() {
         <summary>이어받은 값 (테토리·현금·월과금 등)</summary>
         <Num label="테토리" value={m.takeHome} onChange={n => edit(m => ({ ...m, takeHome: n }))} />
         <Num label="세전 기본급" value={m.grossBase} onChange={n => edit(m => ({ ...m, grossBase: n }))} />
-        <Num label="총지급액 (세전, 메모성)" value={m.grossTotal ?? 0} onChange={n => edit(m => ({ ...m, grossTotal: n || undefined }))} />
+        <Num label="총지급액 (세전)" value={m.grossTotal ?? 0} onChange={n => edit(m => ({ ...m, grossTotal: n || undefined }))} />
         <Num label="현금" value={m.cash} onChange={n => edit(m => ({ ...m, cash: n }))} />
         <h3>월과금</h3>
         {m.recurring.map((r, i) => (
@@ -140,6 +140,23 @@ export default function Month() {
         ))}
         <button onClick={() => edit(m => ({ ...m, recurring: [...m.recurring, { id: crypto.randomUUID(), name: '', amounts: [], paidBy: 'account' }] }))}>+ 항목 추가</button>
       </details>
+
+      <section className="card">
+        <h2>데이트비</h2>
+        {(m.dating ?? []).map((d, i) => {
+          const setDating = (patch: Partial<typeof d>) => edit(m => ({ ...m, dating: (m.dating ?? []).map((x, j) => (j === i ? { ...x, ...patch } : x)) }))
+          return (
+            <div className="inline" key={i}>
+              <input type="number" inputMode="numeric" value={d.amount || ''} placeholder="금액"
+                onChange={e => setDating({ amount: Number(e.target.value) || 0 })} />
+              <input value={d.memo} placeholder="메모 (식비, 일용품 등)" onChange={e => setDating({ memo: e.target.value })} />
+              <button onClick={() => edit(m => ({ ...m, dating: (m.dating ?? []).filter((_, j) => j !== i) }))}>삭제</button>
+            </div>
+          )
+        })}
+        <button onClick={() => edit(m => ({ ...m, dating: [...(m.dating ?? []), { amount: 0, memo: '' }] }))}>+ 항목 추가</button>
+        <div className="row total"><span>이번 달 데이트비</span><b>{yen(c.datingTotal)}</b></div>
+      </section>
 
       <section className="card">
         <h2>라쿠텐</h2>

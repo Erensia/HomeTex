@@ -33,6 +33,8 @@ export default function Summary() {
               <dt>총 유초 카드값</dt><dd>{yen(sum(rows.map(r => r.c.yuchoCard)))}</dd>
               <dt>총 미츠이</dt><dd>{yen(sum(rows.map(r => r.m.cards.mitsui)))}</dd>
               <dt>총 월과금</dt><dd>{yen(sum(rows.map(r => r.c.recurringAll)))}</dd>
+              <dt>총 지급액 (세전)</dt><dd>{yen(sum(rows.map(r => r.m.grossTotal ?? 0)))}</dd>
+              <dt>총 데이트비</dt><dd>{yen(sum(rows.map(r => r.c.datingTotal)))}</dd>
               <dt>평균 카드 잔액</dt><dd>{yen(avg)}</dd>
               <dt>연말 저축 누적</dt><dd>{yen(last!.savingsBalance)}</dd>
               <dt>연간 저축 증가</dt><dd>{yen(sum(rows.map(r => r.c.savingsDelta)))}</dd>
@@ -43,14 +45,14 @@ export default function Summary() {
             <table>
               <thead>
                 <tr>
-                  {['월', '테토리', '유초 카드값', '미츠이', '월과금', '카드값외', '저축 외', '카드 잔액', '저축 이체', '저축 누적', '증감', '라쿠텐', '잔업h', '잔업수당', '고정비%', '지출%', '저축%'].map(h => <th key={h}>{h}</th>)}
+                  {['월', '테토리', '총지급(세전)', '유초 카드값', '미츠이', '월과금', '데이트비', '카드값외', '저축 외', '카드 잔액', '저축 이체', '저축 누적', '증감', '라쿠텐', '잔업h', '잔업수당', '고정비%', '지출%', '저축%'].map(h => <th key={h}>{h}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {rows.map(({ ym, m, c }) => (
                   <tr key={ym}>
                     <td><Link to={`/month/${ym}`}>{ym}</Link></td>
-                    {[m.takeHome, c.yuchoCard, m.cards.mitsui, c.recurringAll, c.outside, c.savingsOutside, c.cardBalance, m.savingsTransfer, c.savingsBalance, c.savingsDelta, c.rakutenBalance].map((v, i) => <td key={i}>{yen(v)}</td>)}
+                    {[m.takeHome, m.grossTotal ?? 0, c.yuchoCard, m.cards.mitsui, c.recurringAll, c.datingTotal, c.outside, c.savingsOutside, c.cardBalance, m.savingsTransfer, c.savingsBalance, c.savingsDelta, c.rakutenBalance].map((v, i) => <td key={i}>{yen(v)}</td>)}
                     <td>{c.overtimeHours}</td>
                     <td>{yen(c.overtimePay)}</td>
                     {c.ratios.map(r => <td key={r.key}>{r.pct.toFixed(1)}</td>)}

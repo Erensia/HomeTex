@@ -13,6 +13,7 @@ export interface MonthRecord {
   savingsTransfer: number
   savingsAdjustments: { amount: number; memo: string }[]
   recurring: Recurring[]
+  dating?: { amount: number; memo: string }[] // 기록용: 잔액 계산에는 쓰지 않음
   memo: string
 }
 
