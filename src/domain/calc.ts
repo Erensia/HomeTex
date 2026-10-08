@@ -27,7 +27,7 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
     spending: m.cash + datingTotal + cardBalance,
     savings: m.savingsTransfer,
   }
-  const ratios = (['fixed', 'spending', 'savings'] as RatioKey[]).map(key => ({
+  const ratios = (Object.keys(actual) as RatioKey[]).map(key => ({
     key,
     target: fl(m.takeHome * s.ratios[key]),
     actual: actual[key],
@@ -53,14 +53,11 @@ export function computeAll(d: AppData): Record<string, Calc> {
   return out
 }
 
+const fmtYm = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 export const shiftYm = (ym: string, n: number) => {
   const [y, m] = ym.split('-').map(Number)
-  const d = new Date(y, m - 1 + n, 1)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  return fmtYm(new Date(y, m - 1 + n, 1))
 }
-export const nowYm = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
+export const nowYm = () => fmtYm(new Date())
 export const workLabel = (ym: string) => `${Number(shiftYm(ym, -1).slice(5))}월분`
 export const yen = (n: number) => n.toLocaleString('ja-JP')

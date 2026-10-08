@@ -37,7 +37,7 @@ export default function Month() {
         <section className="card">
           <p>아직 없는 달입니다.</p>
           {prevYm ? (
-            <button className="primary" onClick={() => dispatch({ type: 'replace', data: { ...data, months: { ...data.months, [ym]: carryOver(data.months[prevYm]) }, meta: { ...data.meta, lastModifiedAt: new Date().toISOString() } } })}>
+            <button className="primary" onClick={() => dispatch({ type: 'month', ym, fn: () => carryOver(data.months[prevYm]) })}>
               전월 값으로 새 달 만들기
             </button>
           ) : (
@@ -49,6 +49,14 @@ export default function Month() {
   }
 
   const edit = (fn: (m: MonthRecord) => MonthRecord) => dispatch({ type: 'month', ym, fn })
+  const card = (label: string, k: keyof MonthRecord['cards']) => (
+    <Num label={label} value={m.cards[k]} onChange={n => edit(m => ({ ...m, cards: { ...m.cards, [k]: n } }))} />
+  )
+  const hours = (label: string, k: keyof MonthRecord['work']) => (
+    <Num label={label} step="0.01" value={m.work[k]} onChange={n => edit(m => ({ ...m, work: { ...m.work, [k]: n } }))} />
+  )
+  const setAdj = (i: number, patch: Partial<MonthRecord['savingsAdjustments'][number]>) =>
+    edit(m => ({ ...m, savingsAdjustments: m.savingsAdjustments.map((x, j) => (j === i ? { ...x, ...patch } : x)) }))
   const setRec = (i: number, patch: Partial<MonthRecord['recurring'][number]>) =>
     edit(m => ({ ...m, recurring: m.recurring.map((r, j) => (j === i ? { ...r, ...patch } : r)) }))
 
@@ -58,11 +66,11 @@ export default function Month() {
 
       <section className="card">
         <h2>이번 달 입력</h2>
-        <Num label="페이페이" value={m.cards.paypay} onChange={n => edit(m => ({ ...m, cards: { ...m.cards, paypay: n } }))} />
-        <Num label="라인" value={m.cards.line} onChange={n => edit(m => ({ ...m, cards: { ...m.cards, line: n } }))} />
-        <Num label="미츠이" value={m.cards.mitsui} onChange={n => edit(m => ({ ...m, cards: { ...m.cards, mitsui: n } }))} />
-        <Num label="총근무시간" step="0.01" value={m.work.totalHours} onChange={n => edit(m => ({ ...m, work: { ...m.work, totalHours: n } }))} />
-        <Num label="소정근무시간" step="0.01" value={m.work.scheduledHours} onChange={n => edit(m => ({ ...m, work: { ...m.work, scheduledHours: n } }))} />
+        {card('페이페이', 'paypay')}
+        {card('라인', 'line')}
+        {card('미츠이', 'mitsui')}
+        {hours('총근무시간', 'totalHours')}
+        {hours('소정근무시간', 'scheduledHours')}
       </section>
 
       <section className="card">
@@ -92,9 +100,9 @@ export default function Month() {
         {m.savingsAdjustments.map((a, i) => (
           <div className="inline" key={i}>
             <input type="number" inputMode="numeric" value={a.amount || ''} placeholder="금액 (−는 출금)"
-              onChange={e => edit(m => ({ ...m, savingsAdjustments: m.savingsAdjustments.map((x, j) => (j === i ? { ...x, amount: Number(e.target.value) || 0 } : x)) }))} />
+              onChange={e => setAdj(i, { amount: Number(e.target.value) || 0 })} />
             <input value={a.memo} placeholder="메모"
-              onChange={e => edit(m => ({ ...m, savingsAdjustments: m.savingsAdjustments.map((x, j) => (j === i ? { ...x, memo: e.target.value } : x)) }))} />
+              onChange={e => setAdj(i, { memo: e.target.value })} />
             <button onClick={() => edit(m => ({ ...m, savingsAdjustments: m.savingsAdjustments.filter((_, j) => j !== i) }))}>삭제</button>
           </div>
         ))}

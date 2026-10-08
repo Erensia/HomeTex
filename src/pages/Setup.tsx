@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
 import { Num } from '../components/Num'
-import { nowYm, yen } from '../domain/calc'
+import { nowYm, recurringTotal, sum, yen } from '../domain/calc'
 import { defaultRecurring, defaultSettings, emptyMonth, type AppData } from '../domain/types'
 import { readBackup } from '../storage/backup'
 
@@ -22,7 +22,7 @@ export default function Setup() {
     const data: AppData = {
       schemaVersion: 1,
       settings: defaultSettings(ym, savings, rakuten),
-      months: { [ym]: { ...emptyMonth(), takeHome, cash, savingsTransfer: transfer, recurring: defaultRecurring() } },
+      months: { [ym]: { ...emptyMonth(), takeHome, cash, savingsTransfer: transfer } },
       meta: { lastExportedAt: null, lastModifiedAt: t },
     }
     dispatch({ type: 'replace', data })
@@ -52,7 +52,7 @@ export default function Setup() {
         <Num label="테토리 (세후 수령액)" value={takeHome} onChange={setTakeHome} />
         <Num label="현금" value={cash} onChange={setCash} />
         <Num label="저축 이체액" value={transfer} onChange={setTransfer} />
-        <p className="muted">월과금 기본 항목(공월·기행·클로드)은 월별 화면에서 수정할 수 있어요. 합계 {yen(1310 + 3880 + 3719)}엔</p>
+        <p className="muted">월과금 기본 항목(공월·기행·클로드)은 월별 화면에서 수정할 수 있어요. 합계 {yen(sum(defaultRecurring().map(recurringTotal)))}엔</p>
         <button className="primary" onClick={start}>시작하기</button>
       </section>
       <section className="card">
