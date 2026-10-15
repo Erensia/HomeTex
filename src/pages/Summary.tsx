@@ -45,14 +45,14 @@ export default function Summary() {
             <table>
               <thead>
                 <tr>
-                  {['월', '테토리', '총지급(세전)', '유초 카드값', '미츠이', '월과금', '데이트비', '카드값외', '저축 외', '카드 잔액', '저축 이체', '저축 누적', '증감', '라쿠텐', '잔업h', '잔업수당', '고정비%', '지출%', '저축%'].map(h => <th key={h}>{h}</th>)}
+                  {['월', '테토리', '총지급(세전)', '유초 카드값', '미츠이', '월과금', '데이트비', '카드값외', '라쿠텐외', '저축 외', '카드 잔액', '저축 이체', '저축 누적', '증감', '라쿠텐 잔액', '잔업h', '잔업수당', '고정비%', '지출%', '저축%'].map(h => <th key={h}>{h}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {rows.map(({ ym, m, c }) => (
                   <tr key={ym}>
                     <td><Link to={`/month/${ym}`}>{ym}</Link></td>
-                    {[m.takeHome, m.grossTotal ?? 0, c.yuchoCard, m.cards.mitsui, c.recurringAll, c.datingTotal, c.outside, c.savingsOutside, c.cardBalance, m.savingsTransfer, c.savingsBalance, c.savingsDelta, c.rakutenBalance].map((v, i) => <td key={i}>{yen(v)}</td>)}
+                    {[m.takeHome, m.grossTotal ?? 0, c.yuchoCard, m.cards.mitsui, c.recurringAll, c.datingTotal, c.outside, c.rakutenOutside, c.savingsOutside, c.cardBalance, m.savingsTransfer, c.savingsBalance, c.savingsDelta, c.rakutenBalance].map((v, i) => <td key={i}>{yen(v)}</td>)}
                     <td>{c.overtimeHours}</td>
                     <td>{yen(c.overtimePay)}</td>
                     {c.ratios.map(r => <td key={r.key}>{r.pct.toFixed(1)}</td>)}

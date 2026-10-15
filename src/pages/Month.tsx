@@ -78,9 +78,10 @@ export default function Month() {
         <Step label="테토리" value={m.takeHome} />
         <Step label="유초 카드값 (페이페이+라인)" value={c.yuchoCard} minus />
         <Step label="카드값외" value={c.outside} />
+        <Step label="라쿠텐 충전" value={s.rakutenCharge} minus />
+        <Step label="라쿠텐외" value={c.rakutenOutside} />
         <Step label="저축 이체액" value={m.savingsTransfer} minus />
         <Step label="저축 외" value={c.savingsOutside} />
-        <Step label="라쿠텐 충전" value={s.rakutenCharge} minus />
         <Step label="현금" value={m.cash} minus />
         <Step label="데이트비 (예상)" value={c.datingTotal} minus />
         <Step label="월과금 (계좌분)" value={c.recurringAccount} minus />

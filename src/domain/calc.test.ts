@@ -12,7 +12,7 @@ const month = {
 describe('4.6 검증 기준값 (2026-11)', () => {
   const c = calcMonth(month, settings, { savings: 0, rakuten: 17737 })
   it('급여 흐름', () => {
-    expect([c.yuchoCard, c.outside, c.savingsOutside, c.cardBalance]).toEqual([25000, 200979, 130979, 89739])
+    expect([c.yuchoCard, c.outside, c.rakutenOutside, c.savingsOutside, c.cardBalance]).toEqual([25000, 200979, 190979, 120979, 89739])
   })
   it('라쿠텐 잔액', () => expect(c.rakutenBalance).toBe(24018))
   it('비율 목표/실제', () => {
