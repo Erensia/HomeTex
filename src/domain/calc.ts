@@ -5,7 +5,7 @@ const fl = (x: number) => Math.floor(x + 1e-9)
 export const sum = (a: number[]) => a.reduce((s, n) => s + n, 0)
 export const recurringTotal = (r: Recurring) => sum(r.amounts)
 
-export interface Balances { savings: number; rakuten: number }
+export interface Balances { savings: number; rakuten: number; nisa: number }
 export type RatioKey = 'fixed' | 'spending' | 'savings'
 
 export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
@@ -21,6 +21,7 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
   const datingTotal = typeof m.dating === 'number' ? m.dating : 0 // 구버전(배열) 데이터 방어
   const cardBalance = savingsOutside - m.cash - datingTotal - recurringAccount - recurringMitsui
   const rakutenBalance = prev.rakuten + s.rakutenCharge - recurringRakuten
+  const nisaBalance = prev.nisa + s.nisaCharge
   const savingsBalance = prev.savings + m.savingsTransfer + sum(m.savingsAdjustments.map(a => a.amount))
   const savingsRecommended = fl(fl(m.takeHome * s.ratios.savings) / s.savingsRoundingUnit) * s.savingsRoundingUnit
   const overtimeHours = Math.max(0, m.work.totalHours - m.work.scheduledHours - s.overtime.includedHours)
@@ -38,7 +39,7 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
   }))
   return {
     yuchoCard, outside, rakutenOutside, savingsOutside, recurringAll, recurringAccount, recurringRakuten, recurringMitsui, datingTotal,
-    cardBalance, rakutenBalance, savingsBalance, savingsDelta: savingsBalance - prev.savings,
+    cardBalance, rakutenBalance, nisaBalance, savingsBalance, savingsDelta: savingsBalance - prev.savings,
     savingsRecommended, overtimeHours, overtimePay, ratios,
   }
 }
@@ -47,11 +48,11 @@ export type Calc = ReturnType<typeof calcMonth>
 // 월을 시간순으로 훑으며 전월 잔액을 이어받아 전체 계산
 export function computeAll(d: AppData): Record<string, Calc> {
   const out: Record<string, Calc> = {}
-  let prev: Balances = { savings: d.settings.opening.savingsBalance, rakuten: d.settings.opening.rakutenBalance }
+  let prev: Balances = { savings: d.settings.opening.savingsBalance, rakuten: d.settings.opening.rakutenBalance, nisa: d.settings.opening.nisaBalance }
   for (const ym of Object.keys(d.months).sort()) {
     const c = calcMonth(d.months[ym], d.settings, prev)
     out[ym] = c
-    prev = { savings: c.savingsBalance, rakuten: c.rakutenBalance }
+    prev = { savings: c.savingsBalance, rakuten: c.rakutenBalance, nisa: c.nisaBalance }
   }
   return out
 }

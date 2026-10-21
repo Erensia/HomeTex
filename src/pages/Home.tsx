@@ -23,6 +23,7 @@ export default function Home() {
             <dt>카드 잔액</dt><dd className={c.cardBalance < 0 ? 'neg' : ''}>{yen(c.cardBalance)}엔</dd>
             <dt>저축 누적</dt><dd>{yen(c.savingsBalance)}엔</dd>
             <dt>라쿠텐 잔액</dt><dd>{yen(c.rakutenBalance)}엔</dd>
+            <dt>NISA 잔액</dt><dd>{yen(c.nisaBalance)}엔</dd>
           </dl>
         )}
         <Link className="btn primary" to={`/month/${ym}`}>최신 월 열기</Link>

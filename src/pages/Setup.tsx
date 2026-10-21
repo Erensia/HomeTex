@@ -12,6 +12,7 @@ export default function Setup() {
   const [ym, setYm] = useState(nowYm())
   const [savings, setSavings] = useState(0)
   const [rakuten, setRakuten] = useState(0)
+  const [nisa, setNisa] = useState(0)
   const [takeHome, setTakeHome] = useState(0)
   const [cash, setCash] = useState(20000)
   const [transfer, setTransfer] = useState(0)
@@ -21,7 +22,7 @@ export default function Setup() {
     const t = new Date().toISOString()
     const data: AppData = {
       schemaVersion: 1,
-      settings: defaultSettings(ym, savings, rakuten),
+      settings: defaultSettings(ym, savings, rakuten, nisa),
       months: { [ym]: { ...emptyMonth(), takeHome, cash, savingsTransfer: transfer } },
       meta: { lastExportedAt: null, lastModifiedAt: t },
     }
@@ -49,6 +50,7 @@ export default function Setup() {
         </label>
         <Num label="초기 저축 잔액" value={savings} onChange={setSavings} />
         <Num label="초기 라쿠텐 잔액" value={rakuten} onChange={setRakuten} />
+        <Num label="초기 NISA 잔액" value={nisa} onChange={setNisa} />
         <Num label="테토리 (세후 수령액)" value={takeHome} onChange={setTakeHome} />
         <Num label="현금" value={cash} onChange={setCash} />
         <Num label="저축 이체액" value={transfer} onChange={setTransfer} />
