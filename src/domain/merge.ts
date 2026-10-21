@@ -13,12 +13,19 @@ export function validate(x: unknown): AppData {
   if (!isObj(x.months)) throw new Error('months 필드가 없습니다.')
   for (const [ym, m] of Object.entries<any>(x.months)) {
     const ok = /^\d{4}-\d{2}$/.test(ym) && isObj(m) && isObj(m.cards) && isObj(m.work) && num(m.takeHome) && num(m.grossBase) &&
-      num(m.cash) && num(m.savingsTransfer) && num(m.cards.paypay) && num(m.cards.line) && num(m.cards.mitsui) &&
+      num(m.cash) && num(m.savingsTransfer) && num(m.cards.paypay) && num(m.cards.line) &&
       Array.isArray(m.recurring) && Array.isArray(m.savingsAdjustments) && typeof m.updatedAt === 'string'
     if (!ok) throw new Error(`월 데이터(${ym})가 올바르지 않습니다.`)
   }
+  // 구버전: 미츠이 별도 금액(cards.mitsui) → 결제처 '미츠이' 월과금 항목으로 이관
+  const months = Object.fromEntries(Object.entries<any>(x.months).map(([ym, m]) => {
+    const { mitsui, ...cards } = m.cards
+    if (!num(mitsui)) return [ym, m]
+    const recurring = mitsui ? [...m.recurring, { id: 'mitsui', name: '미츠이', amounts: [mitsui], paidBy: 'mitsui' }] : m.recurring
+    return [ym, { ...m, cards, recurring }]
+  }))
   return {
-    schemaVersion: 1, exportedAt: x.exportedAt, settings: s as AppData['settings'], months: x.months,
+    schemaVersion: 1, exportedAt: x.exportedAt, settings: s as AppData['settings'], months,
     meta: { lastExportedAt: x.meta?.lastExportedAt ?? null, lastModifiedAt: x.meta?.lastModifiedAt ?? new Date().toISOString() },
   }
 }

@@ -5,8 +5,9 @@ import type { AppData } from './types'
 
 const settings = defaultSettings('2026-11', 0, 17737)
 const month = {
-  ...emptyMonth(), takeHome: 225979, cards: { paypay: 25000, line: 0, mitsui: 6050 },
-  cash: 20000, savingsTransfer: 70000, recurring: defaultRecurring(),
+  ...emptyMonth(), takeHome: 225979, cards: { paypay: 25000, line: 0 },
+  cash: 20000, savingsTransfer: 70000,
+  recurring: [...defaultRecurring(), { id: 'r4', name: '미츠이', amounts: [6050], paidBy: 'mitsui' as const }],
 }
 
 describe('4.6 검증 기준값 (2026-11)', () => {

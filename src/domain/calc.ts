@@ -1,4 +1,4 @@
-import type { AppData, MonthRecord, Recurring, Settings } from './types'
+import type { AppData, MonthRecord, PaidBy, Recurring, Settings } from './types'
 
 // ROUNDDOWN(x,0) — 부동소수 오차(정수 직전 값)를 epsilon으로 보정
 const fl = (x: number) => Math.floor(x + 1e-9)
@@ -13,18 +13,20 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
   const outside = m.takeHome - yuchoCard
   const rakutenOutside = outside - s.rakutenCharge
   const savingsOutside = rakutenOutside - m.savingsTransfer
-  const recurringAll = sum(m.recurring.map(recurringTotal))
-  const recurringAccount = sum(m.recurring.filter(r => r.paidBy === 'account').map(recurringTotal))
-  const recurringRakuten = recurringAll - recurringAccount
+  const by = (p: PaidBy) => sum(m.recurring.filter(r => r.paidBy === p).map(recurringTotal))
+  const recurringAccount = by('account')
+  const recurringRakuten = by('rakuten')
+  const recurringMitsui = by('mitsui')
+  const recurringAll = recurringAccount + recurringRakuten // 미츠이분은 별도 항목
   const datingTotal = typeof m.dating === 'number' ? m.dating : 0 // 구버전(배열) 데이터 방어
-  const cardBalance = savingsOutside - m.cash - datingTotal - recurringAccount - m.cards.mitsui
+  const cardBalance = savingsOutside - m.cash - datingTotal - recurringAccount - recurringMitsui
   const rakutenBalance = prev.rakuten + s.rakutenCharge - recurringRakuten
   const savingsBalance = prev.savings + m.savingsTransfer + sum(m.savingsAdjustments.map(a => a.amount))
   const savingsRecommended = fl(fl(m.takeHome * s.ratios.savings) / s.savingsRoundingUnit) * s.savingsRoundingUnit
   const overtimeHours = Math.max(0, m.work.totalHours - m.work.scheduledHours - s.overtime.includedHours)
   const overtimePay = fl((m.grossBase / s.overtime.denominator) * s.overtime.multiplier * overtimeHours)
   const actual: Record<RatioKey, number> = {
-    fixed: yuchoCard + m.cards.mitsui + recurringAccount + s.rakutenCharge,
+    fixed: yuchoCard + recurringMitsui + recurringAccount + s.rakutenCharge,
     spending: m.cash + datingTotal + cardBalance,
     savings: m.savingsTransfer,
   }
@@ -35,7 +37,7 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
     pct: m.takeHome ? (actual[key] / m.takeHome) * 100 : 0,
   }))
   return {
-    yuchoCard, outside, rakutenOutside, savingsOutside, recurringAll, recurringAccount, recurringRakuten, datingTotal,
+    yuchoCard, outside, rakutenOutside, savingsOutside, recurringAll, recurringAccount, recurringRakuten, recurringMitsui, datingTotal,
     cardBalance, rakutenBalance, savingsBalance, savingsDelta: savingsBalance - prev.savings,
     savingsRecommended, overtimeHours, overtimePay, ratios,
   }

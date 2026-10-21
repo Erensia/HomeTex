@@ -1,10 +1,10 @@
-export type PaidBy = 'account' | 'rakuten'
+export type PaidBy = 'account' | 'rakuten' | 'mitsui'
 
 export interface Recurring { id: string; name: string; amounts: number[]; paidBy: PaidBy }
 
 export interface MonthRecord {
   updatedAt: string
-  cards: { paypay: number; line: number; mitsui: number }
+  cards: { paypay: number; line: number }
   takeHome: number
   grossBase: number
   grossTotal?: number
@@ -51,7 +51,7 @@ export const defaultSettings = (month: string, savingsBalance = 0, rakutenBalanc
 
 export const emptyMonth = (): MonthRecord => ({
   updatedAt: new Date().toISOString(),
-  cards: { paypay: 0, line: 0, mitsui: 0 },
+  cards: { paypay: 0, line: 0 },
   takeHome: 0,
   grossBase: 250000,
   work: { totalHours: 0, scheduledHours: 0 },

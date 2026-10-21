@@ -68,7 +68,6 @@ export default function Month() {
         <h2>이번 달 입력</h2>
         {card('페이페이', 'paypay')}
         {card('라인', 'line')}
-        {card('미츠이', 'mitsui')}
         {hours('총근무시간', 'totalHours')}
         {hours('소정근무시간', 'scheduledHours')}
       </section>
@@ -85,7 +84,7 @@ export default function Month() {
         <Step label="현금" value={m.cash} minus />
         <Step label="데이트비 (예상)" value={c.datingTotal} minus />
         <Step label="월과금 (계좌분)" value={c.recurringAccount} minus />
-        <Step label="미츠이" value={m.cards.mitsui} minus />
+        <Step label="미츠이" value={c.recurringMitsui} minus />
         <div className="row total"><span>카드 잔액</span><b className={c.cardBalance < 0 ? 'neg' : ''}>{yen(c.cardBalance)}</b></div>
         {c.cardBalance < 0 && <p className="warn">카드 잔액이 음수입니다. 저축 이체액이나 지출을 확인하세요.</p>}
       </section>
@@ -144,6 +143,7 @@ export default function Month() {
             <select value={r.paidBy} onChange={e => setRec(i, { paidBy: e.target.value as PaidBy })}>
               <option value="account">계좌</option>
               <option value="rakuten">라쿠텐</option>
+              <option value="mitsui">미츠이</option>
             </select>
             <span className="muted">{yen(recurringTotal(r))}</span>
             <button onClick={() => edit(m => ({ ...m, recurring: m.recurring.filter((_, j) => j !== i) }))}>삭제</button>

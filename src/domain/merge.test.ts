@@ -21,3 +21,11 @@ it('검증: 잘못된 파일은 거부', () => {
   expect(() => validate({ schemaVersion: 2 })).toThrow()
   expect(() => validate(JSON.parse(JSON.stringify(mk({ '2026-11': '2026-11-01T00:00:00Z' }))))).not.toThrow()
 })
+
+it('구버전 cards.mitsui → 결제처 미츠이 월과금으로 이관', () => {
+  const old = JSON.parse(JSON.stringify(mk({ '2026-11': '2026-11-01T00:00:00Z' })))
+  old.months['2026-11'].cards.mitsui = 6050
+  const m = validate(old).months['2026-11']
+  expect('mitsui' in m.cards).toBe(false)
+  expect(m.recurring.at(-1)).toMatchObject({ amounts: [6050], paidBy: 'mitsui' })
+})

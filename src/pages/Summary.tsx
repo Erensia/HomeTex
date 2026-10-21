@@ -31,7 +31,7 @@ export default function Summary() {
             <dl>
               <dt>총 테토리</dt><dd>{yen(sum(rows.map(r => r.m.takeHome)))}</dd>
               <dt>총 유초 카드값</dt><dd>{yen(sum(rows.map(r => r.c.yuchoCard)))}</dd>
-              <dt>총 미츠이</dt><dd>{yen(sum(rows.map(r => r.m.cards.mitsui)))}</dd>
+              <dt>총 미츠이</dt><dd>{yen(sum(rows.map(r => r.c.recurringMitsui)))}</dd>
               <dt>총 월과금</dt><dd>{yen(sum(rows.map(r => r.c.recurringAll)))}</dd>
               <dt>총 지급액 (세전)</dt><dd>{yen(sum(rows.map(r => r.m.grossTotal ?? 0)))}</dd>
               <dt>총 데이트비</dt><dd>{yen(sum(rows.map(r => r.c.datingTotal)))}</dd>
@@ -52,7 +52,7 @@ export default function Summary() {
                 {rows.map(({ ym, m, c }) => (
                   <tr key={ym}>
                     <td><Link to={`/month/${ym}`}>{ym}</Link></td>
-                    {[m.takeHome, m.grossTotal ?? 0, c.yuchoCard, m.cards.mitsui, c.recurringAll, c.datingTotal, c.outside, c.rakutenOutside, c.savingsOutside, c.cardBalance, m.savingsTransfer, c.savingsBalance, c.savingsDelta, c.rakutenBalance].map((v, i) => <td key={i}>{yen(v)}</td>)}
+                    {[m.takeHome, m.grossTotal ?? 0, c.yuchoCard, c.recurringMitsui, c.recurringAll, c.datingTotal, c.outside, c.rakutenOutside, c.savingsOutside, c.cardBalance, m.savingsTransfer, c.savingsBalance, c.savingsDelta, c.rakutenBalance].map((v, i) => <td key={i}>{yen(v)}</td>)}
                     <td>{c.overtimeHours}</td>
                     <td>{yen(c.overtimePay)}</td>
                     {c.ratios.map(r => <td key={r.key}>{r.pct.toFixed(1)}</td>)}
