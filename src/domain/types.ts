@@ -2,9 +2,13 @@ export type PaidBy = 'account' | 'rakuten' | 'mitsui'
 
 export interface Recurring { id: string; name: string; amounts: number[]; paidBy: PaidBy }
 
+export type CardKind = 'paypay' | 'line'
+
+export interface CardItem { id: string; name: string; amounts: number[]; card: CardKind }
+
 export interface MonthRecord {
   updatedAt: string
-  cards: { paypay: number; line: number }
+  cardItems: CardItem[] // 유초 카드값 세부 내역 (페이페이+라인)
   takeHome: number
   grossBase: number
   grossTotal?: number
@@ -51,7 +55,7 @@ export const defaultSettings = (month: string, savingsBalance = 0, rakutenBalanc
 
 export const emptyMonth = (): MonthRecord => ({
   updatedAt: new Date().toISOString(),
-  cards: { paypay: 0, line: 0 },
+  cardItems: [],
   takeHome: 0,
   grossBase: 250000,
   work: { totalHours: 0, scheduledHours: 0 },
@@ -68,6 +72,7 @@ export const carryOver = (prev: MonthRecord): MonthRecord => ({
   takeHome: prev.takeHome,
   grossBase: prev.grossBase,
   grossTotal: prev.grossTotal,
+  cardItems: prev.cardItems.map(i => ({ ...i, id: crypto.randomUUID(), amounts: [] })), // 이름·카드만 이어받고 금액은 비움
   cash: prev.cash,
   dating: prev.dating,
   savingsTransfer: prev.savingsTransfer,

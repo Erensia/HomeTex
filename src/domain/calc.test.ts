@@ -5,7 +5,7 @@ import type { AppData } from './types'
 
 const settings = defaultSettings('2026-11', 0, 17737)
 const month = {
-  ...emptyMonth(), takeHome: 225979, cards: { paypay: 25000, line: 0 },
+  ...emptyMonth(), takeHome: 225979, cardItems: [{ id: 'c1', name: '페이페이', amounts: [25000], card: 'paypay' as const }],
   cash: 20000, savingsTransfer: 70000,
   recurring: [...defaultRecurring(), { id: 'r4', name: '미츠이', amounts: [6050], paidBy: 'mitsui' as const }],
 }

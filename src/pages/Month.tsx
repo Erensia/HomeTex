@@ -2,9 +2,11 @@ import { Link, useParams } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
 import { Num } from '../components/Num'
 import { recurringTotal, shiftYm, workLabel, yen } from '../domain/calc'
-import { carryOver, type MonthRecord, type PaidBy } from '../domain/types'
+import { carryOver, type CardKind, type MonthRecord, type PaidBy } from '../domain/types'
 
 const LABEL = { fixed: '고정비', spending: '지출', savings: '저축' }
+
+const parseAmounts = (v: string) => v.split(/[+,\s]+/).map(Number).filter(n => Number.isFinite(n) && n !== 0)
 
 const Step = ({ label, value, minus }: { label: string; value: number; minus?: boolean }) => (
   <div className="row">
@@ -49,14 +51,14 @@ export default function Month() {
   }
 
   const edit = (fn: (m: MonthRecord) => MonthRecord) => dispatch({ type: 'month', ym, fn })
-  const card = (label: string, k: keyof MonthRecord['cards']) => (
-    <Num label={label} value={m.cards[k]} onChange={n => edit(m => ({ ...m, cards: { ...m.cards, [k]: n } }))} />
-  )
   const hours = (label: string, k: keyof MonthRecord['work']) => (
     <Num label={label} step="0.01" value={m.work[k]} onChange={n => edit(m => ({ ...m, work: { ...m.work, [k]: n } }))} />
   )
   const setAdj = (i: number, patch: Partial<MonthRecord['savingsAdjustments'][number]>) =>
     edit(m => ({ ...m, savingsAdjustments: m.savingsAdjustments.map((x, j) => (j === i ? { ...x, ...patch } : x)) }))
+  const setItem = (i: number, patch: Partial<MonthRecord['cardItems'][number]>) =>
+    edit(m => ({ ...m, cardItems: m.cardItems.map((x, j) => (j === i ? { ...x, ...patch } : x)) }))
+  const cardNames = [...new Set(Object.values(data.months).flatMap(x => x.cardItems.map(i => i.name)))].filter(Boolean)
   const setRec = (i: number, patch: Partial<MonthRecord['recurring'][number]>) =>
     edit(m => ({ ...m, recurring: m.recurring.map((r, j) => (j === i ? { ...r, ...patch } : r)) }))
 
@@ -66,10 +68,28 @@ export default function Month() {
 
       <section className="card">
         <h2>이번 달 입력</h2>
-        {card('페이페이', 'paypay')}
-        {card('라인', 'line')}
         {hours('총근무시간', 'totalHours')}
         {hours('소정근무시간', 'scheduledHours')}
+      </section>
+
+      <section className="card">
+        <h2>카드 내역 (페이페이·라인)</h2>
+        <datalist id="card-names">{cardNames.map(n => <option key={n} value={n} />)}</datalist>
+        {m.cardItems.map((it, i) => (
+          <div className="inline" key={`${ym}-${it.id}`}>
+            <input list="card-names" value={it.name} placeholder="항목" onChange={e => setItem(i, { name: e.target.value })} />
+            <input defaultValue={it.amounts.join('+')} placeholder="1200+500" inputMode="numeric"
+              onBlur={e => setItem(i, { amounts: parseAmounts(e.target.value) })} />
+            <select value={it.card} onChange={e => setItem(i, { card: e.target.value as CardKind })}>
+              <option value="paypay">페이페이</option>
+              <option value="line">라인</option>
+            </select>
+            <span className="muted">{yen(recurringTotal(it))}</span>
+            <button onClick={() => edit(m => ({ ...m, cardItems: m.cardItems.filter((_, j) => j !== i) }))}>삭제</button>
+          </div>
+        ))}
+        <button onClick={() => edit(m => ({ ...m, cardItems: [...m.cardItems, { id: crypto.randomUUID(), name: '', amounts: [], card: 'paypay' }] }))}>+ 항목 추가</button>
+        <div className="row total"><span>유초 카드값 합계</span><b>{yen(c.yuchoCard)}</b></div>
       </section>
 
       <section className="card">
@@ -136,10 +156,10 @@ export default function Month() {
         <Num label="데이트비 (월 예상총액)" value={c.datingTotal} onChange={n => edit(m => ({ ...m, dating: n }))} />
         <h3>월과금</h3>
         {m.recurring.map((r, i) => (
-          <div className="inline" key={r.id}>
+          <div className="inline" key={`${ym}-${r.id}`}>
             <input value={r.name} onChange={e => setRec(i, { name: e.target.value })} />
             <input defaultValue={r.amounts.join('+')} placeholder="610+700"
-              onBlur={e => setRec(i, { amounts: e.target.value.split(/[+,\s]+/).map(Number).filter(n => Number.isFinite(n) && n !== 0) })} />
+              onBlur={e => setRec(i, { amounts: parseAmounts(e.target.value) })} />
             <select value={r.paidBy} onChange={e => setRec(i, { paidBy: e.target.value as PaidBy })}>
               <option value="account">계좌</option>
               <option value="rakuten">라쿠텐</option>

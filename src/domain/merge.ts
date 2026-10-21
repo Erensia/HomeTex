@@ -12,17 +12,19 @@ export function validate(x: unknown): AppData {
     throw new Error('settings 필드가 올바르지 않습니다.')
   if (!isObj(x.months)) throw new Error('months 필드가 없습니다.')
   for (const [ym, m] of Object.entries<any>(x.months)) {
-    const ok = /^\d{4}-\d{2}$/.test(ym) && isObj(m) && isObj(m.cards) && isObj(m.work) && num(m.takeHome) && num(m.grossBase) &&
-      num(m.cash) && num(m.savingsTransfer) && num(m.cards.paypay) && num(m.cards.line) &&
+    const ok = /^\d{4}-\d{2}$/.test(ym) && isObj(m) && isObj(m.work) && num(m.takeHome) && num(m.grossBase) &&
+      num(m.cash) && num(m.savingsTransfer) &&
+      (Array.isArray(m.cardItems) || (isObj(m.cards) && num(m.cards.paypay) && num(m.cards.line))) &&
       Array.isArray(m.recurring) && Array.isArray(m.savingsAdjustments) && typeof m.updatedAt === 'string'
     if (!ok) throw new Error(`월 데이터(${ym})가 올바르지 않습니다.`)
   }
-  // 구버전: 미츠이 별도 금액(cards.mitsui) → 결제처 '미츠이' 월과금 항목으로 이관
+  // 구버전: 카드 금액(cards.paypay/line) → cardItems, 미츠이(cards.mitsui) → 결제처 '미츠이' 월과금 항목으로 이관
   const months = Object.fromEntries(Object.entries<any>(x.months).map(([ym, m]) => {
-    const { mitsui, ...cards } = m.cards
-    if (!num(mitsui)) return [ym, m]
-    const recurring = mitsui ? [...m.recurring, { id: 'mitsui', name: '미츠이', amounts: [mitsui], paidBy: 'mitsui' }] : m.recurring
-    return [ym, { ...m, cards, recurring }]
+    if (!m.cards) return [ym, m]
+    const { cards, ...rest } = m
+    const item = (name: string, card: string, v: number) => (v ? [{ id: card, name, amounts: [v], card }] : [])
+    const mitsui = num(cards.mitsui) && cards.mitsui ? [{ id: 'mitsui', name: '미츠이', amounts: [cards.mitsui], paidBy: 'mitsui' }] : []
+    return [ym, { ...rest, cardItems: [...item('페이페이', 'paypay', cards.paypay), ...item('라인', 'line', cards.line)], recurring: [...m.recurring, ...mitsui] }]
   }))
   return {
     schemaVersion: 1, exportedAt: x.exportedAt, settings: { ...s, opening: { ...s.opening, nisaBalance: s.opening.nisaBalance ?? 0 } } as AppData['settings'], months,

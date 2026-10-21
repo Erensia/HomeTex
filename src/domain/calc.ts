@@ -1,15 +1,15 @@
-import type { AppData, MonthRecord, PaidBy, Recurring, Settings } from './types'
+import type { AppData, MonthRecord, PaidBy, Settings } from './types'
 
 // ROUNDDOWN(x,0) — 부동소수 오차(정수 직전 값)를 epsilon으로 보정
 const fl = (x: number) => Math.floor(x + 1e-9)
 export const sum = (a: number[]) => a.reduce((s, n) => s + n, 0)
-export const recurringTotal = (r: Recurring) => sum(r.amounts)
+export const recurringTotal = (r: { amounts: number[] }) => sum(r.amounts)
 
 export interface Balances { savings: number; rakuten: number; nisa: number }
 export type RatioKey = 'fixed' | 'spending' | 'savings'
 
 export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
-  const yuchoCard = m.cards.paypay + m.cards.line
+  const yuchoCard = sum(m.cardItems.map(recurringTotal))
   const outside = m.takeHome - yuchoCard
   const rakutenOutside = outside - s.rakutenCharge
   const savingsOutside = rakutenOutside - m.savingsTransfer

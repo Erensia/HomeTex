@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useApp } from '../state/AppContext'
-import { sum, yen } from '../domain/calc'
+import { recurringTotal, sum, yen } from '../domain/calc'
 
 export default function Summary() {
   const { year = '' } = useParams()
@@ -12,6 +12,13 @@ export default function Summary() {
   const y = Number(year)
   const avg = rows.length ? Math.floor(sum(rows.map(r => r.c.cardBalance)) / rows.length) : 0
   const last = rows.at(-1)?.c
+  // 카드 내역: 이름별 월 합계 (연간 합계 큰 순)
+  const byName: Record<string, Record<string, number>> = {}
+  for (const { ym, m } of rows) for (const it of m.cardItems) {
+    const n = it.name.trim() || '(이름 없음)'
+    byName[n] = { ...byName[n], [ym]: (byName[n]?.[ym] ?? 0) + recurringTotal(it) }
+  }
+  const items = Object.entries(byName).sort((a, b) => sum(Object.values(b[1])) - sum(Object.values(a[1])))
   const chart = rows.map(({ ym, c }) => ({
     ym: ym.slice(5), savings: c.savingsBalance,
     fixed: +c.ratios[0].pct.toFixed(1), spending: +c.ratios[1].pct.toFixed(1), savingsPct: +c.ratios[2].pct.toFixed(1),
@@ -57,6 +64,22 @@ export default function Summary() {
                     <td>{c.overtimeHours}</td>
                     <td>{yen(c.overtimePay)}</td>
                     {c.ratios.map(r => <td key={r.key}>{r.pct.toFixed(1)}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+
+          <section className="card tablewrap">
+            <h2>카드 내역 항목별</h2>
+            <table>
+              <thead><tr><th>항목</th>{rows.map(r => <th key={r.ym}>{r.ym.slice(5)}월</th>)}<th>합계</th></tr></thead>
+              <tbody>
+                {items.map(([name, byYm]) => (
+                  <tr key={name}>
+                    <td>{name}</td>
+                    {rows.map(r => <td key={r.ym}>{yen(byYm[r.ym] ?? 0)}</td>)}
+                    <td><b>{yen(sum(Object.values(byYm)))}</b></td>
                   </tr>
                 ))}
               </tbody>
