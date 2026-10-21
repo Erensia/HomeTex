@@ -26,7 +26,6 @@ export default function Settings() {
       <section className="card">
         <h2>고정값</h2>
         <Num label="라쿠텐 충전액" value={s.rakutenCharge} onChange={n => set(s => ({ ...s, rakutenCharge: n }))} />
-        <Num label="NISA 월 적립액" value={s.nisaCharge} onChange={n => set(s => ({ ...s, nisaCharge: n }))} />
         <Num label="저축 권장액 반올림 단위" value={s.savingsRoundingUnit} onChange={n => set(s => ({ ...s, savingsRoundingUnit: n || 1 }))} />
       </section>
       <section className="card">

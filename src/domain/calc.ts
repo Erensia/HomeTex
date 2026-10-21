@@ -21,7 +21,7 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
   const datingTotal = typeof m.dating === 'number' ? m.dating : 0 // 구버전(배열) 데이터 방어
   const cardBalance = savingsOutside - m.cash - datingTotal - recurringAccount - recurringMitsui
   const rakutenBalance = prev.rakuten + s.rakutenCharge - recurringRakuten
-  const nisaBalance = prev.nisa + s.nisaCharge
+  const nisaBalance = prev.nisa + sum(m.recurring.filter(r => /nisa/i.test(r.name)).map(recurringTotal)) // 이름에 NISA가 들어간 월과금 = 적립액
   const savingsBalance = prev.savings + m.savingsTransfer + sum(m.savingsAdjustments.map(a => a.amount))
   const savingsRecommended = fl(fl(m.takeHome * s.ratios.savings) / s.savingsRoundingUnit) * s.savingsRoundingUnit
   const overtimeHours = Math.max(0, m.work.totalHours - m.work.scheduledHours - s.overtime.includedHours)

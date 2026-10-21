@@ -21,7 +21,6 @@ export interface Settings {
   updatedAt: string
   ratios: { fixed: number; spending: number; savings: number }
   rakutenCharge: number
-  nisaCharge: number // 매월 NISA 적립액
   overtime: { denominator: number; multiplier: number; includedHours: number }
   savingsRoundingUnit: number
   opening: { month: string; savingsBalance: number; rakutenBalance: number; nisaBalance: number }
@@ -45,7 +44,6 @@ export const defaultSettings = (month: string, savingsBalance = 0, rakutenBalanc
   updatedAt: new Date().toISOString(),
   ratios: { fixed: 0.38, spending: 0.31, savings: 0.31 },
   rakutenCharge: 10000,
-  nisaCharge: 5000,
   overtime: { denominator: 160, multiplier: 1.25, includedHours: 20 },
   savingsRoundingUnit: 10000,
   opening: { month, savingsBalance, rakutenBalance, nisaBalance },

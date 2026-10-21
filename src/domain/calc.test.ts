@@ -41,8 +41,9 @@ it('월 간 잔액 이어받기 + 저축 조정', () => {
   expect(r['2026-12'].rakutenBalance).toBe(24018 + 10000 - 3719)
 })
 
-it('NISA 잔액: 이전 잔액 + 월 적립액(5000), 이어받기', () => {
-  const d: AppData = { schemaVersion: 1, settings: { ...settings, opening: { ...settings.opening, nisaBalance: 40255 } }, months: { '2026-11': month, '2026-12': month }, meta: { lastExportedAt: null, lastModifiedAt: '' } }
+it('NISA 잔액: 이전 잔액 + 이름에 NISA가 들어간 월과금 합계', () => {
+  const nisa = { ...month, recurring: [...month.recurring, { id: 'n', name: 'NISA', amounts: [5000], paidBy: 'mitsui' as const }] }
+  const d: AppData = { schemaVersion: 1, settings: { ...settings, opening: { ...settings.opening, nisaBalance: 40255 } }, months: { '2026-11': nisa, '2026-12': nisa }, meta: { lastExportedAt: null, lastModifiedAt: '' } }
   const r = computeAll(d)
   expect([r['2026-11'].nisaBalance, r['2026-12'].nisaBalance]).toEqual([45255, 50255])
 })

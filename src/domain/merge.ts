@@ -25,7 +25,7 @@ export function validate(x: unknown): AppData {
     return [ym, { ...m, cards, recurring }]
   }))
   return {
-    schemaVersion: 1, exportedAt: x.exportedAt, settings: { ...s, nisaCharge: s.nisaCharge ?? 5000, opening: { ...s.opening, nisaBalance: s.opening.nisaBalance ?? 0 } } as AppData['settings'], months,
+    schemaVersion: 1, exportedAt: x.exportedAt, settings: { ...s, opening: { ...s.opening, nisaBalance: s.opening.nisaBalance ?? 0 } } as AppData['settings'], months,
     meta: { lastExportedAt: x.meta?.lastExportedAt ?? null, lastModifiedAt: x.meta?.lastModifiedAt ?? new Date().toISOString() },
   }
 }
