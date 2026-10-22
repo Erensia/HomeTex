@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
 import { Num } from '../components/Num'
+import { Icon } from '../components/Icon'
 import { recurringTotal, shiftYm, workLabel, yen } from '../domain/calc'
 import { carryOver, type CardKind, type MonthRecord, type PaidBy } from '../domain/types'
 
@@ -25,9 +26,9 @@ export default function Month() {
 
   const nav = (
     <div className="monthnav">
-      <Link to={`/month/${shiftYm(ym, -1)}`}>◀</Link>
+      <Link to={`/month/${shiftYm(ym, -1)}`} aria-label="이전 달"><Icon name="left" /></Link>
       <h1>{ym} ({workLabel(ym)})</h1>
-      <Link to={`/month/${shiftYm(ym, 1)}`}>▶</Link>
+      <Link to={`/month/${shiftYm(ym, 1)}`} aria-label="다음 달"><Icon name="right" /></Link>
     </div>
   )
 
@@ -85,7 +86,7 @@ export default function Month() {
               <option value="line">라인</option>
             </select>
             <span className="muted">{yen(recurringTotal(it))}</span>
-            <button onClick={() => edit(m => ({ ...m, cardItems: m.cardItems.filter((_, j) => j !== i) }))}>삭제</button>
+            <button className="danger" onClick={() => edit(m => ({ ...m, cardItems: m.cardItems.filter((_, j) => j !== i) }))}>삭제</button>
           </div>
         ))}
         <button onClick={() => edit(m => ({ ...m, cardItems: [...m.cardItems, { id: crypto.randomUUID(), name: '', amounts: [], card: 'paypay' }] }))}>+ 항목 추가</button>
@@ -129,7 +130,7 @@ export default function Month() {
               onChange={e => setAdj(i, { amount: Number(e.target.value) || 0 })} />
             <input value={a.memo} placeholder="메모"
               onChange={e => setAdj(i, { memo: e.target.value })} />
-            <button onClick={() => edit(m => ({ ...m, savingsAdjustments: m.savingsAdjustments.filter((_, j) => j !== i) }))}>삭제</button>
+            <button className="danger" onClick={() => edit(m => ({ ...m, savingsAdjustments: m.savingsAdjustments.filter((_, j) => j !== i) }))}>삭제</button>
           </div>
         ))}
         <button onClick={() => edit(m => ({ ...m, savingsAdjustments: [...m.savingsAdjustments, { amount: 0, memo: '' }] }))}>+ 조정 추가</button>
@@ -172,7 +173,7 @@ export default function Month() {
               <option value="mitsui">미츠이</option>
             </select>
             <span className="muted">{yen(recurringTotal(r))}</span>
-            <button onClick={() => edit(m => ({ ...m, recurring: m.recurring.filter((_, j) => j !== i) }))}>삭제</button>
+            <button className="danger" onClick={() => edit(m => ({ ...m, recurring: m.recurring.filter((_, j) => j !== i) }))}>삭제</button>
           </div>
         ))}
         <button onClick={() => edit(m => ({ ...m, recurring: [...m.recurring, { id: crypto.randomUUID(), name: '', amounts: [], paidBy: 'account' }] }))}>+ 항목 추가</button>

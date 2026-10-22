@@ -1,8 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
+import { Icon } from '../components/Icon'
 import { recurringTotal, sum, yen } from '../domain/calc'
 
-const SEG = ['#6b7fd7', '#f0a35e', '#4caf7d']
+const SEG = ['var(--seg1)', 'var(--seg2)', 'var(--seg3)']
 const LABELS = ['고정비', '지출', '저축']
 
 export default function Summary() {
@@ -26,9 +27,9 @@ export default function Summary() {
   return (
     <>
       <div className="monthnav">
-        <Link to={`/summary/${y - 1}`}>◀</Link>
+        <Link to={`/summary/${y - 1}`} aria-label="이전 해"><Icon name="left" /></Link>
         <h1>{year}년 요약</h1>
-        <Link to={`/summary/${y + 1}`}>▶</Link>
+        <Link to={`/summary/${y + 1}`} aria-label="다음 해"><Icon name="right" /></Link>
       </div>
       {!rows.length ? <p className="muted">이 해의 데이터가 없습니다.</p> : (
         <>
@@ -98,7 +99,7 @@ export default function Summary() {
 
           <section className="card">
             <h2>월별 비율 (실제 %)</h2>
-            <p className="muted">{LABELS.map((l, i) => <span key={l} style={{ color: SEG[i] }}>● {l} </span>)}</p>
+            <p className="muted legend">{LABELS.map((l, i) => <span key={l}><i style={{ background: SEG[i] }} />{l}</span>)}</p>
             {rows.map(({ ym, c }) => (
               <div className="brow" key={ym}>
                 <span>{ym.slice(5)}월</span>

@@ -19,12 +19,15 @@ export default function Home() {
       <section className="card">
         <h2>{ym} ({workLabel(ym)})</h2>
         {c && (
-          <dl>
-            <dt>카드 잔액</dt><dd className={c.cardBalance < 0 ? 'neg' : ''}>{yen(c.cardBalance)}엔</dd>
-            <dt>저축 누적</dt><dd>{yen(c.savingsBalance)}엔</dd>
-            <dt>라쿠텐 잔액</dt><dd>{yen(c.rakutenBalance)}엔</dd>
-            <dt>NISA 잔액</dt><dd>{yen(c.nisaBalance)}엔</dd>
-          </dl>
+          <>
+            <p className="muted">카드 잔액</p>
+            <p className={`big${c.cardBalance < 0 ? ' neg' : ''}`}>{yen(c.cardBalance)}<small>엔</small></p>
+            <div className="tiles">
+              {([['저축 누적', c.savingsBalance], ['라쿠텐 잔액', c.rakutenBalance], ['NISA 잔액', c.nisaBalance]] as const).map(([label, v]) => (
+                <div className="tile" key={label}><span>{label}</span><b>{yen(v)}</b></div>
+              ))}
+            </div>
+          </>
         )}
         <Link className="btn primary" to={`/month/${ym}`}>최신 월 열기</Link>
       </section>

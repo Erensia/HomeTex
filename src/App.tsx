@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
-import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { latestMonth, useApp } from './state/AppContext'
 import { nowYm } from './domain/calc'
 import type { AppData } from './domain/types'
+import { Icon, type IconName } from './components/Icon'
 import Setup from './pages/Setup'
 import Home from './pages/Home'
 import Month from './pages/Month'
@@ -13,39 +13,35 @@ import Backup from './pages/Backup'
 const Logo = () => <span className="logo">Home<b>Tex</b></span>
 
 function Shell({ data }: { data: AppData }) {
-  const [open, setOpen] = useState(false)
-  const { pathname } = useLocation()
-  useEffect(() => setOpen(false), [pathname])
+  const here = useLocation().pathname.split('/')[1]
 
   const m = latestMonth(data) ?? nowYm()
   const needBackup = Object.keys(data.months).length > 0 && (!data.meta.lastExportedAt || data.meta.lastModifiedAt > data.meta.lastExportedAt)
-  const links: [string, string, string, boolean?][] = [
-    ['/', '🏠', '홈', true],
-    [`/month/${m}`, '📅', '월별'],
-    [`/summary/${m.slice(0, 4)}`, '📊', '요약'],
-    ['/settings', '⚙️', '설정'],
-    ['/backup', '💾', '백업'],
+  const links: [string, IconName, string][] = [
+    ['/', 'home', '홈'],
+    [`/month/${m}`, 'calendar', '월별'],
+    [`/summary/${m.slice(0, 4)}`, 'chart', '요약'],
+    ['/settings', 'sliders', '설정'],
+    ['/backup', 'archive', '백업'],
   ]
 
   return (
     <>
-      <button className="logo-btn" aria-label="메뉴 열기/닫기" aria-expanded={open} onClick={() => setOpen(o => !o)}>
+      <nav className="tabs" aria-label="주 메뉴">
         <Logo />
-        {needBackup && !open && <em className="dot" />}
-      </button>
-      {open && <div className="scrim" onClick={() => setOpen(false)} />}
-      <aside className={open ? 'open' : ''}>
-        <nav>
-          {links.map(([to, icon, label, end]) => (
-            <NavLink key={to} to={to} end={end} title={label}>
-              <i>{icon}</i>
-              <span>{label}</span>
-              {label === '백업' && needBackup && <em className="badge">필요</em>}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
+        {links.map(([to, icon, label]) => (
+          // 다른 달/연도로 이동해도 같은 탭이 활성 상태로 유지되도록 첫 경로 조각으로 비교
+          <Link key={to} to={to} aria-current={to.split('/')[1] === here ? 'page' : undefined}>
+            <span className="ico">
+              <Icon name={icon} />
+              {label === '백업' && needBackup && <em className="dot" role="img" aria-label="백업 필요" />}
+            </span>
+            <span>{label}</span>
+          </Link>
+        ))}
+      </nav>
       <main>
+        <header className="brand"><Logo /></header>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/month/:ym" element={<Month />} />
