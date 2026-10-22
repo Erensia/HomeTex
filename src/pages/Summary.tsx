@@ -1,5 +1,4 @@
 import { Link, useParams } from 'react-router-dom'
-import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useApp } from '../state/AppContext'
 import { recurringTotal, sum, yen } from '../domain/calc'
 
@@ -19,10 +18,6 @@ export default function Summary() {
     byName[n] = { ...byName[n], [ym]: (byName[n]?.[ym] ?? 0) + recurringTotal(it) }
   }
   const items = Object.entries(byName).sort((a, b) => sum(Object.values(b[1])) - sum(Object.values(a[1])))
-  const chart = rows.map(({ ym, c }) => ({
-    ym: ym.slice(5), savings: c.savingsBalance,
-    fixed: +c.ratios[0].pct.toFixed(1), spending: +c.ratios[1].pct.toFixed(1), savingsPct: +c.ratios[2].pct.toFixed(1),
-  }))
 
   return (
     <>
@@ -84,24 +79,6 @@ export default function Summary() {
                 ))}
               </tbody>
             </table>
-          </section>
-
-          <section className="card">
-            <h2>저축 누적 추이</h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chart}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="ym" /><YAxis width={70} tickFormatter={yen} /><Tooltip formatter={yen} />
-                <Line dataKey="savings" name="저축 누적" stroke="#2f6fed" strokeWidth={2} /></LineChart>
-            </ResponsiveContainer>
-          </section>
-
-          <section className="card">
-            <h2>월별 비율 (실제 %)</h2>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={chart}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="ym" /><YAxis width={40} /><Tooltip /><Legend />
-                <Bar dataKey="fixed" name="고정비" stackId="a" fill="#6b7fd7" />
-                <Bar dataKey="spending" name="지출" stackId="a" fill="#f0a35e" />
-                <Bar dataKey="savingsPct" name="저축" stackId="a" fill="#4caf7d" /></BarChart>
-            </ResponsiveContainer>
           </section>
         </>
       )}
