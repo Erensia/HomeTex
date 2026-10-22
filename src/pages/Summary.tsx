@@ -2,6 +2,9 @@ import { Link, useParams } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
 import { recurringTotal, sum, yen } from '../domain/calc'
 
+const SEG = ['#6b7fd7', '#f0a35e', '#4caf7d']
+const LABELS = ['고정비', '지출', '저축']
+
 export default function Summary() {
   const { year = '' } = useParams()
   const { data, calc } = useApp()
@@ -11,6 +14,7 @@ export default function Summary() {
   const y = Number(year)
   const avg = rows.length ? Math.floor(sum(rows.map(r => r.c.cardBalance)) / rows.length) : 0
   const last = rows.at(-1)?.c
+  const maxSavings = Math.max(1, ...rows.map(r => r.c.savingsBalance))
   // 카드 내역: 이름별 월 합계 (연간 합계 큰 순)
   const byName: Record<string, Record<string, number>> = {}
   for (const { ym, m } of rows) for (const it of m.cardItems) {
@@ -79,6 +83,29 @@ export default function Summary() {
                 ))}
               </tbody>
             </table>
+          </section>
+
+          <section className="card">
+            <h2>저축 누적 추이</h2>
+            {rows.map(({ ym, c }) => (
+              <div className="brow" key={ym}>
+                <span>{ym.slice(5)}월</span>
+                <div className="bar"><i style={{ width: `${(Math.max(0, c.savingsBalance) / maxSavings) * 100}%` }} /></div>
+                <span>{yen(c.savingsBalance)}</span>
+              </div>
+            ))}
+          </section>
+
+          <section className="card">
+            <h2>월별 비율 (실제 %)</h2>
+            <p className="muted">{LABELS.map((l, i) => <span key={l} style={{ color: SEG[i] }}>● {l} </span>)}</p>
+            {rows.map(({ ym, c }) => (
+              <div className="brow" key={ym}>
+                <span>{ym.slice(5)}월</span>
+                <div className="bar stack">{c.ratios.map((r, i) => <i key={r.key} style={{ width: `${Math.max(0, r.pct)}%`, background: SEG[i] }} />)}</div>
+                <span>{c.ratios.map(r => r.pct.toFixed(0)).join('/')}</span>
+              </div>
+            ))}
           </section>
         </>
       )}

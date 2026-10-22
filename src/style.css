@@ -100,6 +100,10 @@ dt { color: var(--muted); }
 .bar { position: relative; height: 10px; background: rgba(47, 111, 237, .12); border-radius: 5px; margin: 2px 0 8px; }
 .bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 5px; }
 .bar u { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
+.brow { display: grid; grid-template-columns: 3rem 1fr auto; align-items: center; gap: 8px; font-size: .9rem; }
+.brow .bar { margin: 4px 0; }
+.bar.stack { display: flex; overflow: hidden; }
+.bar.stack i { position: static; border-radius: 0; flex: none; }
 .tablewrap { overflow-x: auto; }
 table { border-collapse: collapse; font-size: .85rem; white-space: nowrap; }
 th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; }
