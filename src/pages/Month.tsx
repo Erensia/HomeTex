@@ -89,6 +89,12 @@ export default function Month() {
           </div>
         ))}
         <button onClick={() => edit(m => ({ ...m, cardItems: [...m.cardItems, { id: crypto.randomUUID(), name: '', amounts: [], card: 'paypay' }] }))}>+ 항목 추가</button>
+        {([['paypay', '페이페이'], ['line', '라인']] as const).map(([k, label]) => (
+          <div className="row" key={k}>
+            <span>{label} 합계</span>
+            <b>{yen(m.cardItems.filter(i => i.card === k).reduce((a, i) => a + recurringTotal(i), 0))}</b>
+          </div>
+        ))}
         <div className="row total"><span>유초 카드값 합계</span><b>{yen(c.yuchoCard)}</b></div>
       </section>
 
