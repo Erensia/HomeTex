@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useApp } from '../state/AppContext'
 import { recurringTotal, sum, yen, type Calc } from '../domain/calc'
 import type { MonthRecord } from '../domain/types'
@@ -30,6 +29,9 @@ const COLS: [string, (r: Row) => string | number, boolean?][] = [
   ['저축%', r => r.c.ratios[2].pct.toFixed(1)],
 ]
 
+const SEG = ['var(--seg1)', 'var(--seg2)', 'var(--seg3)']
+const LABELS = ['고정비', '지출', '저축']
+
 export default function Summary() {
   const { year = '' } = useParams()
   const { data, calc } = useApp()
@@ -40,6 +42,7 @@ export default function Summary() {
   const y = Number(year)
   const avg = rows.length ? Math.floor(sum(rows.map(r => r.c.cardBalance)) / rows.length) : 0
   const last = rows.at(-1)?.c
+  const maxSavings = Math.max(1, ...rows.map(r => r.c.savingsBalance))
   // 카드 내역: 이름별 월 합계 (연간 합계 큰 순)
   const byName: Record<string, Record<string, number>> = {}
   for (const { ym, m } of rows) for (const it of m.cardItems) {
@@ -47,10 +50,6 @@ export default function Summary() {
     byName[n] = { ...byName[n], [ym]: (byName[n]?.[ym] ?? 0) + recurringTotal(it) }
   }
   const items = Object.entries(byName).sort((a, b) => sum(Object.values(b[1])) - sum(Object.values(a[1])))
-  const chart = rows.map(({ ym, c }) => ({
-    ym: ym.slice(5), savings: c.savingsBalance,
-    fixed: +c.ratios[0].pct.toFixed(1), spending: +c.ratios[1].pct.toFixed(1), savingsPct: +c.ratios[2].pct.toFixed(1),
-  }))
 
   return (
     <>
@@ -117,20 +116,25 @@ export default function Summary() {
 
           <section className="card">
             <h2>저축 누적 추이</h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chart}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="ym" /><YAxis width={70} tickFormatter={yen} /><Tooltip formatter={yen} />
-                <Line dataKey="savings" name="저축 누적" stroke="#2f6fed" strokeWidth={2} /></LineChart>
-            </ResponsiveContainer>
+            {rows.map(({ ym, c }) => (
+              <div className="brow" key={ym}>
+                <span>{ym.slice(5)}월</span>
+                <div className="bar"><i style={{ width: `${(Math.max(0, c.savingsBalance) / maxSavings) * 100}%` }} /></div>
+                <span>{yen(c.savingsBalance)}</span>
+              </div>
+            ))}
           </section>
 
           <section className="card">
             <h2>월별 비율 (실제 %)</h2>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={chart}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="ym" /><YAxis width={40} /><Tooltip /><Legend />
-                <Bar dataKey="fixed" name="고정비" stackId="a" fill="#6b7fd7" />
-                <Bar dataKey="spending" name="지출" stackId="a" fill="#f0a35e" />
-                <Bar dataKey="savingsPct" name="저축" stackId="a" fill="#4caf7d" /></BarChart>
-            </ResponsiveContainer>
+            <p className="muted legend">{LABELS.map((l, i) => <span key={l}><i style={{ background: SEG[i] }} />{l}</span>)}</p>
+            {rows.map(({ ym, c }) => (
+              <div className="brow" key={ym}>
+                <span>{ym.slice(5)}월</span>
+                <div className="bar stack">{c.ratios.map((r, i) => <i key={r.key} style={{ width: `${Math.max(0, r.pct)}%`, background: SEG[i] }} />)}</div>
+                <span>{c.ratios.map(r => r.pct.toFixed(0)).join('/')}</span>
+              </div>
+            ))}
           </section>
         </>
       )}
