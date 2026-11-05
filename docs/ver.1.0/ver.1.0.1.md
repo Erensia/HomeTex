@@ -160,3 +160,4 @@ main ──●──────────────────────
 | 2026-11-05 | 초안 작성: 범위·감사·절차 확정 (다크 모드 제외, 하단 탭바 포함) |
 | 2026-11-05 | 구현 완료: 탭바·홈·월별·요약·비주얼 개선, 테스트·빌드 통과 |
 | 2026-11-05 | 릴리스 전 `origin/main`(2026-10-22 디자인 개편 포함 5커밋)을 `dev`에 병합. 충돌한 디자인 파일(App·Home·Month·Summary·style.css)과 `index.html`·`vite.config.ts`는 dev(1.0.1) 디자인을 채택하고, 다크 모드는 제외 결정에 따라 제거. main의 비디자인 변경(recharts 제거와 CSS 막대 차트, 페이페이·라인 합계 행, 구 `cards.*` 이관 코드·테스트 제거)은 유지 |
+| 2026-11-05 | 릴리스 직후 Chrome에서 흰 화면(옛 JS 번들 요청 실패) 발생, 캐시 정리로 해결. 사건 기록: [`docs/incidents/2026-11-05-white-page-stale-bundle.md`](../incidents/2026-11-05-white-page-stale-bundle.md) |
