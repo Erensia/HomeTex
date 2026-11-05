@@ -1,11 +1,39 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useApp } from '../state/AppContext'
-import { recurringTotal, sum, yen } from '../domain/calc'
+import { recurringTotal, sum, yen, type Calc } from '../domain/calc'
+import type { MonthRecord } from '../domain/types'
+
+type Row = { ym: string; m: MonthRecord; c: Calc }
+// [헤더, 값, 핵심 열 여부]
+const COLS: [string, (r: Row) => string | number, boolean?][] = [
+  ['테토리', r => yen(r.m.takeHome), true],
+  ['유초 카드값', r => yen(r.c.yuchoCard)],
+  ['카드 잔액', r => yen(r.c.cardBalance), true],
+  ['저축 이체', r => yen(r.m.savingsTransfer)],
+  ['저축 누적', r => yen(r.c.savingsBalance), true],
+  ['증감', r => yen(r.c.savingsDelta)],
+  ['총지급(세전)', r => yen(r.m.grossTotal ?? 0)],
+  ['미츠이', r => yen(r.c.recurringMitsui)],
+  ['월과금', r => yen(r.c.recurringAll)],
+  ['데이트비', r => yen(r.c.datingTotal)],
+  ['카드값외', r => yen(r.c.outside)],
+  ['라쿠텐외', r => yen(r.c.rakutenOutside)],
+  ['저축 외', r => yen(r.c.savingsOutside)],
+  ['라쿠텐 잔액', r => yen(r.c.rakutenBalance)],
+  ['NISA 잔액', r => yen(r.c.nisaBalance)],
+  ['잔업h', r => r.c.overtimeHours],
+  ['잔업수당', r => yen(r.c.overtimePay)],
+  ['고정비%', r => r.c.ratios[0].pct.toFixed(1)],
+  ['지출%', r => r.c.ratios[1].pct.toFixed(1)],
+  ['저축%', r => r.c.ratios[2].pct.toFixed(1)],
+]
 
 export default function Summary() {
   const { year = '' } = useParams()
   const { data, calc } = useApp()
+  const [all, setAll] = useState(false)
   if (!data) return null
   const yms = Object.keys(data.months).filter(k => k.startsWith(year)).sort()
   const rows = yms.map(ym => ({ ym, m: data.months[ym], c: calc[ym] }))
@@ -27,9 +55,9 @@ export default function Summary() {
   return (
     <>
       <div className="monthnav">
-        <Link to={`/summary/${y - 1}`}>◀</Link>
+        <Link to={`/summary/${y - 1}`} aria-label="이전 해">◀</Link>
         <h1>{year}년 요약</h1>
-        <Link to={`/summary/${y + 1}`}>▶</Link>
+        <Link to={`/summary/${y + 1}`} aria-label="다음 해">▶</Link>
       </div>
       {!rows.length ? <p className="muted">이 해의 데이터가 없습니다.</p> : (
         <>
@@ -49,25 +77,26 @@ export default function Summary() {
             </dl>
           </section>
 
-          <section className="card tablewrap">
-            <table>
-              <thead>
-                <tr>
-                  {['월', '테토리', '총지급(세전)', '유초 카드값', '미츠이', '월과금', '데이트비', '카드값외', '라쿠텐외', '저축 외', '카드 잔액', '저축 이체', '저축 누적', '증감', '라쿠텐 잔액', 'NISA 잔액', '잔업h', '잔업수당', '고정비%', '지출%', '저축%'].map(h => <th key={h}>{h}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map(({ ym, m, c }) => (
-                  <tr key={ym}>
-                    <td><Link to={`/month/${ym}`}>{ym}</Link></td>
-                    {[m.takeHome, m.grossTotal ?? 0, c.yuchoCard, c.recurringMitsui, c.recurringAll, c.datingTotal, c.outside, c.rakutenOutside, c.savingsOutside, c.cardBalance, m.savingsTransfer, c.savingsBalance, c.savingsDelta, c.rakutenBalance, c.nisaBalance].map((v, i) => <td key={i}>{yen(v)}</td>)}
-                    <td>{c.overtimeHours}</td>
-                    <td>{yen(c.overtimePay)}</td>
-                    {c.ratios.map(r => <td key={r.key}>{r.pct.toFixed(1)}</td>)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <section className="card">
+            <div className="row">
+              <h2>월별 표</h2>
+              <button onClick={() => setAll(v => !v)} aria-pressed={all}>{all ? '핵심 항목만' : '전체 항목 보기'}</button>
+            </div>
+            <div className="tablewrap">
+              <table>
+                <thead>
+                  <tr><th>월</th>{COLS.filter(c => all || c[2]).map(([h]) => <th key={h}>{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {rows.map(r => (
+                    <tr key={r.ym}>
+                      <td><Link to={`/month/${r.ym}`}>{r.ym}</Link></td>
+                      {COLS.filter(c => all || c[2]).map(([h, f]) => <td key={h} className={h === '카드 잔액' && r.c.cardBalance < 0 ? 'neg' : ''}>{f(r)}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
 
           <section className="card tablewrap">

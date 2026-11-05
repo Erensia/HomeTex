@@ -1,12 +1,15 @@
 import { Link, useParams } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
 import { Num } from '../components/Num'
+import { Balance } from '../components/Balance'
 import { recurringTotal, shiftYm, workLabel, yen } from '../domain/calc'
 import { carryOver, type CardKind, type MonthRecord, type PaidBy } from '../domain/types'
 
 const LABEL = { fixed: '고정비', spending: '지출', savings: '저축' }
 
 const parseAmounts = (v: string) => v.split(/[+,\s]+/).map(Number).filter(n => Number.isFinite(n) && n !== 0)
+
+const ask = (what: string, empty: boolean) => empty || window.confirm(`${what}을(를) 삭제할까요?`)
 
 const Step = ({ label, value, minus }: { label: string; value: number; minus?: boolean }) => (
   <div className="row">
@@ -25,9 +28,9 @@ export default function Month() {
 
   const nav = (
     <div className="monthnav">
-      <Link to={`/month/${shiftYm(ym, -1)}`}>◀</Link>
+      <Link to={`/month/${shiftYm(ym, -1)}`} aria-label="이전 달">◀</Link>
       <h1>{ym} ({workLabel(ym)})</h1>
-      <Link to={`/month/${shiftYm(ym, 1)}`}>▶</Link>
+      <Link to={`/month/${shiftYm(ym, 1)}`} aria-label="다음 달">▶</Link>
     </div>
   )
 
@@ -67,6 +70,15 @@ export default function Month() {
       {nav}
 
       <section className="card">
+        <Balance label="카드 잔액" value={c.cardBalance} />
+        <dl>
+          <dt>저축 누적</dt><dd>{yen(c.savingsBalance)}</dd>
+          <dt>라쿠텐 잔액</dt><dd>{yen(c.rakutenBalance)}</dd>
+        </dl>
+      </section>
+
+      <p className="group">입력</p>
+      <section className="card">
         <h2>이번 달 입력</h2>
         {hours('총근무시간', 'totalHours')}
         {hours('소정근무시간', 'scheduledHours')}
@@ -76,21 +88,86 @@ export default function Month() {
         <h2>카드 내역 (페이페이·라인)</h2>
         <datalist id="card-names">{cardNames.map(n => <option key={n} value={n} />)}</datalist>
         {m.cardItems.map((it, i) => (
-          <div className="inline" key={`${ym}-${it.id}`}>
-            <input list="card-names" value={it.name} placeholder="항목" onChange={e => setItem(i, { name: e.target.value })} />
-            <input defaultValue={it.amounts.join('+')} placeholder="1200+500" inputMode="numeric"
+          <div className="item" key={`${ym}-${it.id}`}>
+            <input list="card-names" value={it.name} placeholder="항목" aria-label="항목명" onChange={e => setItem(i, { name: e.target.value })} />
+            <input defaultValue={it.amounts.join('+')} placeholder="1200+500" aria-label="금액 (+로 합산)" inputMode="numeric"
               onBlur={e => setItem(i, { amounts: parseAmounts(e.target.value) })} />
-            <select value={it.card} onChange={e => setItem(i, { card: e.target.value as CardKind })}>
-              <option value="paypay">페이페이</option>
-              <option value="line">라인</option>
-            </select>
-            <span className="muted">{yen(recurringTotal(it))}</span>
-            <button onClick={() => edit(m => ({ ...m, cardItems: m.cardItems.filter((_, j) => j !== i) }))}>삭제</button>
+            <div className="sub">
+              <select value={it.card} aria-label="카드 종류" onChange={e => setItem(i, { card: e.target.value as CardKind })}>
+                <option value="paypay">페이페이</option>
+                <option value="line">라인</option>
+              </select>
+              <span className="sum">{yen(recurringTotal(it))}</span>
+              <button className="danger" aria-label={`${it.name || '항목'} 삭제`}
+                onClick={() => ask(`'${it.name || '항목'}'`, !it.name && !it.amounts.length) && edit(m => ({ ...m, cardItems: m.cardItems.filter((_, j) => j !== i) }))}>삭제</button>
+            </div>
           </div>
         ))}
         <button onClick={() => edit(m => ({ ...m, cardItems: [...m.cardItems, { id: crypto.randomUUID(), name: '', amounts: [], card: 'paypay' }] }))}>+ 항목 추가</button>
+        <p className="muted hint">금액은 +로 합산해요 (예: 1200+500). 입력칸을 벗어나면 반영돼요.</p>
         <div className="row total"><span>유초 카드값 합계</span><b>{yen(c.yuchoCard)}</b></div>
       </section>
+
+      <section className="card">
+        <h2>저축</h2>
+        <Num label="저축 이체액" value={m.savingsTransfer} onChange={n => edit(m => ({ ...m, savingsTransfer: n }))} />
+        <div className="row">
+          <span>권장액 {yen(c.savingsRecommended)} (차이 {yen(m.savingsTransfer - c.savingsRecommended)})</span>
+          <button onClick={() => edit(m => ({ ...m, savingsTransfer: c.savingsRecommended }))}>권장액 적용</button>
+        </div>
+        <h3>저축 조정</h3>
+        {m.savingsAdjustments.map((a, i) => (
+          <div className="item" key={i}>
+            <input type="number" inputMode="numeric" value={a.amount || ''} placeholder="금액 (−는 출금)" aria-label="조정 금액"
+              onChange={e => setAdj(i, { amount: Number(e.target.value) || 0 })} />
+            <input value={a.memo} placeholder="메모" aria-label="조정 메모"
+              onChange={e => setAdj(i, { memo: e.target.value })} />
+            <div className="sub">
+              <span className="sum" />
+              <button className="danger" aria-label="저축 조정 삭제"
+                onClick={() => ask(`'${a.memo || '저축 조정'}'`, !a.memo && !a.amount) && edit(m => ({ ...m, savingsAdjustments: m.savingsAdjustments.filter((_, j) => j !== i) }))}>삭제</button>
+            </div>
+          </div>
+        ))}
+        <button onClick={() => edit(m => ({ ...m, savingsAdjustments: [...m.savingsAdjustments, { amount: 0, memo: '' }] }))}>+ 조정 추가</button>
+        <Step label="저축 누적" value={c.savingsBalance} />
+        <Step label="저축 증감" value={c.savingsDelta} />
+      </section>
+
+      <details className="card">
+        <summary>이어받은 값 (테토리·현금·월과금 등)</summary>
+        <Num label="테토리" value={m.takeHome} onChange={n => edit(m => ({ ...m, takeHome: n }))} />
+        <Num label="세전 기본급" value={m.grossBase} onChange={n => edit(m => ({ ...m, grossBase: n }))} />
+        <Num label="총지급액 (세전)" value={m.grossTotal ?? 0} onChange={n => edit(m => ({ ...m, grossTotal: n || undefined }))} />
+        <Num label="현금" value={m.cash} onChange={n => edit(m => ({ ...m, cash: n }))} />
+        <Num label="데이트비 (월 예상총액)" value={c.datingTotal} onChange={n => edit(m => ({ ...m, dating: n }))} />
+        <h3>월과금</h3>
+        {m.recurring.map((r, i) => (
+          <div className="item" key={`${ym}-${r.id}`}>
+            <input value={r.name} placeholder="항목" aria-label="월과금 항목명" onChange={e => setRec(i, { name: e.target.value })} />
+            <input defaultValue={r.amounts.join('+')} placeholder="610+700" aria-label="금액 (+로 합산)" inputMode="numeric"
+              onBlur={e => setRec(i, { amounts: parseAmounts(e.target.value) })} />
+            <div className="sub">
+              <select value={r.paidBy} aria-label="결제처" onChange={e => setRec(i, { paidBy: e.target.value as PaidBy })}>
+                <option value="account">계좌</option>
+                <option value="rakuten">라쿠텐</option>
+                <option value="mitsui">미츠이</option>
+              </select>
+              <span className="sum">{yen(recurringTotal(r))}</span>
+              <button className="danger" aria-label={`${r.name || '항목'} 삭제`}
+                onClick={() => ask(`'${r.name || '항목'}'`, !r.name && !r.amounts.length) && edit(m => ({ ...m, recurring: m.recurring.filter((_, j) => j !== i) }))}>삭제</button>
+            </div>
+          </div>
+        ))}
+        <button onClick={() => edit(m => ({ ...m, recurring: [...m.recurring, { id: crypto.randomUUID(), name: '', amounts: [], paidBy: 'account' }] }))}>+ 항목 추가</button>
+      </details>
+
+      <section className="card">
+        <h2>메모</h2>
+        <textarea rows={4} value={m.memo} onChange={e => edit(m => ({ ...m, memo: e.target.value }))} />
+      </section>
+
+      <p className="group">결과</p>
 
       <section className="card">
         <h2>급여 흐름</h2>
@@ -110,28 +187,6 @@ export default function Month() {
       </section>
 
       <section className="card">
-        <h2>저축</h2>
-        <Num label="저축 이체액" value={m.savingsTransfer} onChange={n => edit(m => ({ ...m, savingsTransfer: n }))} />
-        <div className="row">
-          <span>권장액 {yen(c.savingsRecommended)} (차이 {yen(m.savingsTransfer - c.savingsRecommended)})</span>
-          <button onClick={() => edit(m => ({ ...m, savingsTransfer: c.savingsRecommended }))}>권장액 적용</button>
-        </div>
-        <h3>저축 조정</h3>
-        {m.savingsAdjustments.map((a, i) => (
-          <div className="inline" key={i}>
-            <input type="number" inputMode="numeric" value={a.amount || ''} placeholder="금액 (−는 출금)"
-              onChange={e => setAdj(i, { amount: Number(e.target.value) || 0 })} />
-            <input value={a.memo} placeholder="메모"
-              onChange={e => setAdj(i, { memo: e.target.value })} />
-            <button onClick={() => edit(m => ({ ...m, savingsAdjustments: m.savingsAdjustments.filter((_, j) => j !== i) }))}>삭제</button>
-          </div>
-        ))}
-        <button onClick={() => edit(m => ({ ...m, savingsAdjustments: [...m.savingsAdjustments, { amount: 0, memo: '' }] }))}>+ 조정 추가</button>
-        <Step label="저축 누적" value={c.savingsBalance} />
-        <Step label="저축 증감" value={c.savingsDelta} />
-      </section>
-
-      <section className="card">
         <h2>비율 목표 vs 실제</h2>
         {c.ratios.map(r => (
           <div key={r.key} className="ratio">
@@ -148,47 +203,15 @@ export default function Month() {
       </section>
 
       <details className="card">
-        <summary>이어받은 값 (테토리·현금·월과금 등)</summary>
-        <Num label="테토리" value={m.takeHome} onChange={n => edit(m => ({ ...m, takeHome: n }))} />
-        <Num label="세전 기본급" value={m.grossBase} onChange={n => edit(m => ({ ...m, grossBase: n }))} />
-        <Num label="총지급액 (세전)" value={m.grossTotal ?? 0} onChange={n => edit(m => ({ ...m, grossTotal: n || undefined }))} />
-        <Num label="현금" value={m.cash} onChange={n => edit(m => ({ ...m, cash: n }))} />
-        <Num label="데이트비 (월 예상총액)" value={c.datingTotal} onChange={n => edit(m => ({ ...m, dating: n }))} />
-        <h3>월과금</h3>
-        {m.recurring.map((r, i) => (
-          <div className="inline" key={`${ym}-${r.id}`}>
-            <input value={r.name} onChange={e => setRec(i, { name: e.target.value })} />
-            <input defaultValue={r.amounts.join('+')} placeholder="610+700"
-              onBlur={e => setRec(i, { amounts: parseAmounts(e.target.value) })} />
-            <select value={r.paidBy} onChange={e => setRec(i, { paidBy: e.target.value as PaidBy })}>
-              <option value="account">계좌</option>
-              <option value="rakuten">라쿠텐</option>
-              <option value="mitsui">미츠이</option>
-            </select>
-            <span className="muted">{yen(recurringTotal(r))}</span>
-            <button onClick={() => edit(m => ({ ...m, recurring: m.recurring.filter((_, j) => j !== i) }))}>삭제</button>
-          </div>
-        ))}
-        <button onClick={() => edit(m => ({ ...m, recurring: [...m.recurring, { id: crypto.randomUUID(), name: '', amounts: [], paidBy: 'account' }] }))}>+ 항목 추가</button>
-      </details>
-
-      <section className="card">
-        <h2>라쿠텐</h2>
+        <summary>라쿠텐 · 잔업수당</summary>
+        <h3>라쿠텐</h3>
         <Step label="충전" value={s.rakutenCharge} />
         <Step label="이번 달 월과금 (라쿠텐분)" value={c.recurringRakuten} minus />
         <div className="row total"><span>라쿠텐 잔액</span><b>{yen(c.rakutenBalance)}</b></div>
-      </section>
-
-      <section className="card">
-        <h2>잔업수당 (참고)</h2>
+        <h3>잔업수당 (참고)</h3>
         <Step label="잔업시간" value={c.overtimeHours} />
         <Step label="예상 수당" value={c.overtimePay} />
-      </section>
-
-      <section className="card">
-        <h2>메모</h2>
-        <textarea rows={4} value={m.memo} onChange={e => edit(m => ({ ...m, memo: e.target.value }))} />
-      </section>
+      </details>
     </>
   )
 }
