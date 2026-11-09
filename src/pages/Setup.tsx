@@ -4,11 +4,13 @@ import { useApp } from '../state/AppContext'
 import { Num } from '../components/Num'
 import { nowYm, recurringTotal, sum, yen } from '../domain/calc'
 import { defaultRecurring, defaultSettings, emptyMonth, type AppData } from '../domain/types'
-import { readBackup } from '../storage/backup'
+import { downloadRaw, readBackup } from '../storage/backup'
+import { loadCorruptRaw } from '../storage/localStore'
 
 export default function Setup() {
   const { dispatch } = useApp()
   const nav = useNavigate()
+  const corrupt = loadCorruptRaw()
   const [ym, setYm] = useState(nowYm())
   const [savings, setSavings] = useState(0)
   const [rakuten, setRakuten] = useState(0)
@@ -43,6 +45,12 @@ export default function Setup() {
   return (
     <main>
       <h1>HomeTex 초기 설정</h1>
+      {corrupt && (
+        <section className="card">
+          <p className="warn">이 기기에 읽을 수 없는 이전 데이터가 남아 있어요. 새로 시작하기 전에 파일로 내려받아 두세요.</p>
+          <button onClick={() => downloadRaw(corrupt)}>이전 데이터 내려받기</button>
+        </section>
+      )}
       <section className="card">
         <label className="field">
           <span>시작 월 (급여 받는 달)</span>

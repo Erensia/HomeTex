@@ -7,6 +7,7 @@ import App from './App'
 import './style.css'
 
 registerSW({ immediate: true })
+try { sessionStorage.removeItem('hometex:recovered') } catch { /* index.html의 자동 복구 플래그 해제 */ }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

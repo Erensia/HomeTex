@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useApp } from '../state/AppContext'
 import { compare, merge, type Diff } from '../domain/merge'
 import type { AppData } from '../domain/types'
-import { exportBackup, readBackup } from '../storage/backup'
-import { clearBeforeImport, loadBeforeImport, stashBeforeImport } from '../storage/localStore'
+import { downloadRaw, exportBackup, readBackup } from '../storage/backup'
+import { clearBeforeImport, loadBeforeImport, loadCorruptRaw, stashBeforeImport } from '../storage/localStore'
 
 const DIFF: Record<Diff, string> = { new: '새 항목', incoming: '가져올 쪽이 최신', current: '현재가 최신', same: '동일' }
 
@@ -76,6 +76,13 @@ export default function Backup() {
         {canUndo && <button onClick={undo}>직전 가져오기 되돌리기</button>}
         {msg && <p className="warn">{msg}</p>}
       </section>
+      {loadCorruptRaw() && (
+        <section className="card">
+          <h2>읽을 수 없는 이전 데이터</h2>
+          <p className="muted">예전에 읽지 못해 따로 보관해 둔 데이터가 있어요. 필요 없으면 무시해도 됩니다.</p>
+          <button onClick={() => downloadRaw(loadCorruptRaw()!)}>내려받기</button>
+        </section>
+      )}
       <p className="muted">iPhone은 홈 화면 아이콘으로만 사용하세요. Safari 탭과 저장 공간이 분리됩니다. PC 시크릿 창은 종료 시 데이터가 삭제됩니다.</p>
     </>
   )

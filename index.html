@@ -10,6 +10,20 @@
     <title>HomeTex</title>
   </head>
   <body>
+    <script>
+      // 배포 후 옛 index.html이 사라진 JS 번들을 요청하면(흰 화면) 서비스 워커·캐시를 비우고 한 번만 새로고침한다.
+      // localStorage는 건드리지 않는다. 성공 시 main.tsx가 플래그를 지운다.
+      addEventListener('error', function (e) {
+        var t = e.target
+        if (!t || t.tagName !== 'SCRIPT' || !t.src) return
+        try { if (sessionStorage.getItem('hometex:recovered')) return; sessionStorage.setItem('hometex:recovered', '1') } catch (_) { return }
+        var sw = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations() : Promise.resolve([])
+        sw.then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister() })) })
+          .then(function () { return window.caches ? caches.keys() : [] })
+          .then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k) })) })
+          .then(function () { location.reload() }, function () { location.reload() })
+      }, true)
+    </script>
     <div class="status-bar"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

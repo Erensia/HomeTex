@@ -4,6 +4,9 @@ import type { AppData, MonthRecord, PaidBy, Settings } from './types'
 const fl = (x: number) => Math.floor(x + 1e-9)
 export const sum = (a: number[]) => a.reduce((s, n) => s + n, 0)
 export const recurringTotal = (r: { amounts: number[] }) => sum(r.amounts)
+// "1,200+500" → [1200, 500]. 쉼표는 천 단위 구분자로 보고 제거, 합산 구분은 + 또는 공백. 전각 숫자·＋도 허용(NFKC)
+export const parseAmounts = (v: string) =>
+  v.normalize('NFKC').replace(/,/g, '').split(/[+\s]+/).map(Number).filter(n => Number.isFinite(n) && n !== 0)
 
 export interface Balances { savings: number; rakuten: number; nisa: number }
 export type RatioKey = 'fixed' | 'spending' | 'savings'

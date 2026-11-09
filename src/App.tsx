@@ -19,6 +19,7 @@ const ICONS: Record<string, JSX.Element> = {
 
 function Shell({ data }: { data: AppData }) {
   const { pathname } = useLocation()
+  const { saveFailed } = useApp()
   const m = latestMonth(data) ?? nowYm()
   const needBackup = Object.keys(data.months).length > 0 && (!data.meta.lastExportedAt || data.meta.lastModifiedAt > data.meta.lastExportedAt)
   // [이동 경로, 활성 판정 접두어, 아이콘, 라벨]
@@ -33,6 +34,7 @@ function Shell({ data }: { data: AppData }) {
   return (
     <>
       <main>
+        {saveFailed && <p className="warn" role="alert">이 기기에 저장하지 못했어요. 지금 <Link to="/backup">백업</Link>해 두세요. (저장 공간 부족이나 사생활 보호 모드일 수 있어요)</p>}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/month/:ym" element={<Month />} />

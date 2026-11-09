@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useReducer, useState, type ReactNode } from 'react'
 import type { AppData, MonthRecord, Settings } from '../domain/types'
 import { computeAll } from '../domain/calc'
 import { load, requestPersist, save } from '../storage/localStore'
@@ -25,14 +25,15 @@ function reducer(d: AppData | null, a: Action): AppData | null {
   }
 }
 
-const Ctx = createContext<{ data: AppData | null; calc: ReturnType<typeof computeAll>; dispatch: (a: Action) => void }>(null!)
+const Ctx = createContext<{ data: AppData | null; calc: ReturnType<typeof computeAll>; dispatch: (a: Action) => void; saveFailed: boolean }>(null!)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [data, dispatch] = useReducer(reducer, null, load)
+  const [saveFailed, setSaveFailed] = useState(false)
   useEffect(() => { requestPersist() }, [])
-  useEffect(() => { if (data) save(data) }, [data])
+  useEffect(() => { if (data) setSaveFailed(!save(data)) }, [data])
   const calc = useMemo(() => (data ? computeAll(data) : {}), [data])
-  return <Ctx.Provider value={{ data, calc, dispatch }}>{children}</Ctx.Provider>
+  return <Ctx.Provider value={{ data, calc, dispatch, saveFailed }}>{children}</Ctx.Provider>
 }
 
 export const useApp = () => useContext(Ctx)

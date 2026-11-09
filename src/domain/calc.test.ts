@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcMonth, computeAll } from './calc'
+import { calcMonth, computeAll, parseAmounts } from './calc'
 import { defaultRecurring, defaultSettings, emptyMonth } from './types'
 import type { AppData } from './types'
 
@@ -46,6 +46,15 @@ it('NISA 잔액: 이전 잔액 + 이름에 NISA가 들어간 월과금 합계', 
   const d: AppData = { schemaVersion: 1, settings: { ...settings, opening: { ...settings.opening, nisaBalance: 40255 } }, months: { '2026-11': nisa, '2026-12': nisa }, meta: { lastExportedAt: null, lastModifiedAt: '' } }
   const r = computeAll(d)
   expect([r['2026-11'].nisaBalance, r['2026-12'].nisaBalance]).toEqual([45255, 50255])
+})
+
+it('금액 파싱: 천 단위 쉼표 제거, +·공백 합산, 전각 숫자 허용', () => {
+  expect(parseAmounts('1,200')).toEqual([1200])
+  expect(parseAmounts('1200+500')).toEqual([1200, 500])
+  expect(parseAmounts('1,200 + 500')).toEqual([1200, 500])
+  expect(parseAmounts('１２００＋５００')).toEqual([1200, 500])
+  expect(parseAmounts('-500')).toEqual([-500])
+  expect(parseAmounts('')).toEqual([])
 })
 
 it('데이트비: 카드 잔액에서 차감, 지출로 분류되어 3항목 합 = 테토리 유지', () => {

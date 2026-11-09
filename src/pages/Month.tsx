@@ -2,12 +2,10 @@ import { Link, useParams } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
 import { Num } from '../components/Num'
 import { Balance } from '../components/Balance'
-import { recurringTotal, shiftYm, workLabel, yen } from '../domain/calc'
+import { parseAmounts, recurringTotal, shiftYm, workLabel, yen } from '../domain/calc'
 import { carryOver, type CardKind, type MonthRecord, type PaidBy } from '../domain/types'
 
 const LABEL = { fixed: '고정비', spending: '지출', savings: '저축' }
-
-const parseAmounts = (v: string) => v.split(/[+,\s]+/).map(Number).filter(n => Number.isFinite(n) && n !== 0)
 
 const ask = (what: string, empty: boolean) => empty || window.confirm(`${what}을(를) 삭제할까요?`)
 
