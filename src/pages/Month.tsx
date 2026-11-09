@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import { useApp } from '../state/AppContext'
+import { needsBackup, prevMonth, useApp } from '../state/AppContext'
 import { Num } from '../components/Num'
 import { Balance } from '../components/Balance'
 import { parseAmounts, recurringTotal, shiftYm, workLabel, yen } from '../domain/calc'
@@ -32,13 +32,16 @@ export default function Month() {
     </div>
   )
 
+  const prevYm = prevMonth(data, ym)
   if (!m) {
-    const prevYm = Object.keys(data.months).sort().filter(k => k < ym).at(-1)
     return (
       <>
         {nav}
         <section className="card">
           <p>아직 없는 달입니다.</p>
+          {prevYm && needsBackup(data) && (
+            <p className="warn">새 달을 만들기 전에 지금까지의 데이터를 <Link to="/backup">백업</Link>해 두면 안전해요.</p>
+          )}
           {prevYm ? (
             <button className="primary" onClick={() => dispatch({ type: 'month', ym, fn: () => carryOver(data.months[prevYm]) })}>
               전월 값으로 새 달 만들기
@@ -78,6 +81,10 @@ export default function Month() {
       <p className="group">입력</p>
       <section className="card">
         <h2>이번 달 입력</h2>
+        <Num label="테토리 (세후 수령액)" value={m.takeHome} onChange={n => edit(m => ({ ...m, takeHome: n }))} />
+        {prevYm && m.takeHome > 0 && m.takeHome === data.months[prevYm].takeHome && (
+          <p className="muted hint">전월과 같은 값이에요. 급여명세서와 맞는지 확인하세요.</p>
+        )}
         {hours('총근무시간', 'totalHours')}
         {hours('소정근무시간', 'scheduledHours')}
       </section>
@@ -139,8 +146,7 @@ export default function Month() {
       </section>
 
       <details className="card">
-        <summary>이어받은 값 (테토리·현금·월과금 등)</summary>
-        <Num label="테토리" value={m.takeHome} onChange={n => edit(m => ({ ...m, takeHome: n }))} />
+        <summary>이어받은 값 (현금·월과금 등)</summary>
         <Num label="세전 기본급" value={m.grossBase} onChange={n => edit(m => ({ ...m, grossBase: n }))} />
         <Num label="총지급액 (세전)" value={m.grossTotal ?? 0} onChange={n => edit(m => ({ ...m, grossTotal: n || undefined }))} />
         <Num label="현금" value={m.cash} onChange={n => edit(m => ({ ...m, cash: n }))} />

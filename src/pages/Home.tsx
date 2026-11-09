@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import { latestMonth, useApp } from '../state/AppContext'
-import { nowYm, workLabel, yen } from '../domain/calc'
+import { latestMonth, prevMonth, useApp } from '../state/AppContext'
+import { nowYm, workLabel, yen, yenSigned } from '../domain/calc'
 import { Balance } from '../components/Balance'
 
 const DAY = 86400000
@@ -15,6 +15,8 @@ export default function Home() {
   const stale = last && Date.now() - Date.parse(last) > 30 * DAY
   const now = nowYm()
   const filled = !!m?.cardItems.some(i => i.amounts.length)
+  const prevYm = prevMonth(data, ym)
+  const diff = c && prevYm ? c.cardBalance - calc[prevYm].cardBalance : 0
 
   return (
     <>
@@ -26,6 +28,8 @@ export default function Home() {
           <>
             <Balance label="카드 잔액" value={c.cardBalance} />
             <dl>
+              {prevYm && <><dt>전월 대비 카드 잔액</dt><dd className={diff < 0 ? 'neg' : ''}>{yenSigned(diff)}엔</dd></>}
+              <dt>이번 달 저축 증감</dt><dd>{yenSigned(c.savingsDelta)}엔</dd>
               <dt>저축 누적</dt><dd>{yen(c.savingsBalance)}엔</dd>
               <dt>라쿠텐 잔액</dt><dd>{yen(c.rakutenBalance)}엔</dd>
               <dt>NISA 잔액</dt><dd>{yen(c.nisaBalance)}엔</dd>

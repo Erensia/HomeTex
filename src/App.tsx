@@ -1,5 +1,5 @@
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { latestMonth, useApp } from './state/AppContext'
+import { latestMonth, needsBackup, useApp } from './state/AppContext'
 import { nowYm } from './domain/calc'
 import type { AppData } from './domain/types'
 import Setup from './pages/Setup'
@@ -21,7 +21,7 @@ function Shell({ data }: { data: AppData }) {
   const { pathname } = useLocation()
   const { saveFailed } = useApp()
   const m = latestMonth(data) ?? nowYm()
-  const needBackup = Object.keys(data.months).length > 0 && (!data.meta.lastExportedAt || data.meta.lastModifiedAt > data.meta.lastExportedAt)
+  const needBackup = needsBackup(data)
   // [이동 경로, 활성 판정 접두어, 아이콘, 라벨]
   const links: [string, string, string, string][] = [
     ['/', '/', 'home', '홈'],

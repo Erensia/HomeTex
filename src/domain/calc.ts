@@ -68,3 +68,4 @@ export const shiftYm = (ym: string, n: number) => {
 export const nowYm = () => fmtYm(new Date())
 export const workLabel = (ym: string) => `${Number(shiftYm(ym, -1).slice(5))}월분`
 export const yen = (n: number) => n.toLocaleString('ja-JP')
+export const yenSigned = (n: number) => (n > 0 ? '+' : '') + yen(n)

@@ -39,3 +39,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 export const useApp = () => useContext(Ctx)
 
 export const latestMonth = (d: AppData) => Object.keys(d.months).sort().at(-1)
+export const prevMonth = (d: AppData, ym: string) => Object.keys(d.months).sort().filter(k => k < ym).at(-1)
+export const needsBackup = (d: AppData) =>
+  Object.keys(d.months).length > 0 && (!d.meta.lastExportedAt || d.meta.lastModifiedAt > d.meta.lastExportedAt)
