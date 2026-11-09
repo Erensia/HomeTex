@@ -3,18 +3,27 @@ import type { AppData } from './types'
 const isObj = (x: unknown): x is Record<string, any> => typeof x === 'object' && x !== null
 const num = (x: unknown) => typeof x === 'number' && Number.isFinite(x)
 
+// 항목 목록: 모두 객체이고 name은 문자열, amounts는 숫자 배열, extra 조건(결제처·카드 종류)을 만족해야 한다
+const items = (a: unknown, extra: (x: any) => boolean) =>
+  Array.isArray(a) && a.every(x => isObj(x) && typeof x.name === 'string' && Array.isArray(x.amounts) && x.amounts.every(num) && extra(x))
+
 // 실패 시 사유를 담은 Error를 던진다
 export function validate(x: unknown): AppData {
   if (!isObj(x)) throw new Error('JSON 객체가 아닙니다.')
   if (x.schemaVersion !== 1) throw new Error(`지원하지 않는 schemaVersion: ${x.schemaVersion}`)
   const s = x.settings
-  if (!isObj(s) || !isObj(s.ratios) || !isObj(s.opening) || !isObj(s.overtime) || !num(s.rakutenCharge) || !num(s.savingsRoundingUnit) || typeof s.updatedAt !== 'string')
+  if (!isObj(s) || !isObj(s.ratios) || !isObj(s.opening) || !isObj(s.overtime) || !num(s.rakutenCharge) || !num(s.savingsRoundingUnit) || typeof s.updatedAt !== 'string' ||
+    !['fixed', 'spending', 'savings'].every(k => num(s.ratios[k])) ||
+    !['denominator', 'multiplier', 'includedHours'].every(k => num(s.overtime[k])) ||
+    !num(s.opening.savingsBalance) || !num(s.opening.rakutenBalance))
     throw new Error('settings 필드가 올바르지 않습니다.')
   if (!isObj(x.months)) throw new Error('months 필드가 없습니다.')
   for (const [ym, m] of Object.entries<any>(x.months)) {
-    const ok = /^\d{4}-\d{2}$/.test(ym) && isObj(m) && isObj(m.work) && num(m.takeHome) && num(m.grossBase) &&
-      num(m.cash) && num(m.savingsTransfer) &&
-      Array.isArray(m.cardItems) && Array.isArray(m.recurring) && Array.isArray(m.savingsAdjustments) && typeof m.updatedAt === 'string'
+    const ok = /^\d{4}-(0[1-9]|1[0-2])$/.test(ym) && isObj(m) && isObj(m.work) && num(m.work.totalHours) && num(m.work.scheduledHours) &&
+      num(m.takeHome) && num(m.grossBase) && num(m.cash) && num(m.savingsTransfer) && typeof m.updatedAt === 'string' &&
+      items(m.cardItems, i => i.card === 'paypay' || i.card === 'line') &&
+      items(m.recurring, r => r.paidBy === 'account' || r.paidBy === 'rakuten' || r.paidBy === 'mitsui') &&
+      Array.isArray(m.savingsAdjustments) && m.savingsAdjustments.every((a: any) => isObj(a) && num(a.amount))
     if (!ok) throw new Error(`월 데이터(${ym})가 올바르지 않습니다.`)
   }
   return {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
 import { recurringTotal, sum, yen, type Calc } from '../domain/calc'
 import type { MonthRecord } from '../domain/types'
@@ -37,6 +37,8 @@ export default function Summary() {
   const { data, calc } = useApp()
   const [all, setAll] = useState(false)
   if (!data) return null
+  if (!/^\d{4}$/.test(year)) return <Navigate to="/" replace />
+  const cols = COLS.filter(c => all || c[2])
   const yms = Object.keys(data.months).filter(k => k.startsWith(year)).sort()
   const rows = yms.map(ym => ({ ym, m: data.months[ym], c: calc[ym] }))
   const y = Number(year)
@@ -84,13 +86,13 @@ export default function Summary() {
             <div className="tablewrap">
               <table>
                 <thead>
-                  <tr><th>월</th>{COLS.filter(c => all || c[2]).map(([h]) => <th key={h}>{h}</th>)}</tr>
+                  <tr><th>월</th>{cols.map(([h]) => <th key={h}>{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {rows.map(r => (
                     <tr key={r.ym}>
                       <td><Link to={`/month/${r.ym}`}>{r.ym}</Link></td>
-                      {COLS.filter(c => all || c[2]).map(([h, f]) => <td key={h} className={h === '카드 잔액' && r.c.cardBalance < 0 ? 'neg' : ''}>{f(r)}</td>)}
+                      {cols.map(([h, f]) => <td key={h} className={h === '카드 잔액' && r.c.cardBalance < 0 ? 'neg' : ''}>{f(r)}</td>)}
                     </tr>
                   ))}
                 </tbody>

@@ -21,7 +21,7 @@ export function calcMonth(m: MonthRecord, s: Settings, prev: Balances) {
   const recurringRakuten = by('rakuten')
   const recurringMitsui = by('mitsui')
   const recurringAll = recurringAccount + recurringRakuten // 미츠이분은 별도 항목
-  const datingTotal = typeof m.dating === 'number' ? m.dating : 0 // 구버전(배열) 데이터 방어
+  const datingTotal = typeof m.dating === 'number' ? m.dating : 0 // 선택 항목: 없거나 숫자가 아니면 0
   const cardBalance = savingsOutside - m.cash - datingTotal - recurringAccount - recurringMitsui
   const rakutenBalance = prev.rakuten + s.rakutenCharge - recurringRakuten
   const nisaBalance = prev.nisa + sum(m.recurring.filter(r => /nisa/i.test(r.name)).map(recurringTotal)) // 이름에 NISA가 들어간 월과금 = 적립액

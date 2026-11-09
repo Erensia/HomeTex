@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { needsBackup, prevMonth, useApp } from '../state/AppContext'
 import { Num } from '../components/Num'
 import { Balance } from '../components/Balance'
@@ -19,7 +19,8 @@ const Step = ({ label, value, minus }: { label: string; value: number; minus?: b
 export default function Month() {
   const { ym = '' } = useParams()
   const { data, calc, dispatch } = useApp()
-  if (!data || !/^\d{4}-\d{2}$/.test(ym)) return null
+  if (!data) return null
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(ym)) return <Navigate to="/" replace />
   const m = data.months[ym]
   const c = calc[ym]
   const s = data.settings
